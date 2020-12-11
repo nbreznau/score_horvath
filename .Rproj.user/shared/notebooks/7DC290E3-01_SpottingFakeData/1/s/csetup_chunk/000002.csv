@@ -1,0 +1,6 @@
+"0","```r
+pacman::p_load(\"dplyr\",\"kableExtra\",\"readr\")
+
+```"
+"1","There were 50 or more warnings (use warnings() to see the first 50)
+"

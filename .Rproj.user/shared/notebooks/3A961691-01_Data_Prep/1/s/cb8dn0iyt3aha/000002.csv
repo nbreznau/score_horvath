@@ -1,0 +1,25 @@
+"0","# original data"
+"0","df_origa <- readstata13::read.dta13(""data/Mass_Public_Surveys_1993-2007.dta"")"
+"0","df_orig_labels <- readstata13::read.dta13(""data/Mass_Public_Surveys_1993-2007.dta"", generate.factors = T)"
+"0",""
+"0","# original tables 1 & 2 from the article"
+"0","Tbl1_orig <- read_xlsx(""data/orig_tables.xlsx"", sheet = ""Tbl1"", col_names = F)"
+"2","New names:
+* `` -> ...1
+* `` -> ...2
+* `` -> ...3
+* `` -> ...4
+* `` -> ...5
+* ...
+"
+"0","Tbl2_orig <- read_xlsx(""data/orig_tables.xlsx"", sheet = ""Tbl2"", col_names = F)"
+"2","New names:
+* `` -> ...1
+* `` -> ...2
+* `` -> ...3
+* `` -> ...4
+* `` -> ...5
+* ...
+"
+"0","# codebook"
+"0","codebook <- read.csv(""data/codebook.csv"", header = T)"

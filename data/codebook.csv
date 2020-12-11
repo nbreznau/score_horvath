@@ -1,0 +1,559 @@
+varname,varlabel
+country ,This is a combined variable of both country and year
+year,Year
+cntry,Country Code
+y1 ,Unique identifier for each observation 
+y2 ,Interviewer’s Unique Number 
+y2_07 ,2007: Strata 1 - Okrug
+y3 ,Sampling unit
+y3_1,Populated Area
+y3_07,2007: Strata 2 – Oblast
+y4,Secondary sampling unit
+y5 ,Region 
+y5a ,County 
+y5b  ,Type of settlement (urban/rural)
+y5c ,Settlement size
+y6 ,Date of interview
+y7_07 ,Start time of interview
+y8_07 ,End time of interview 
+y7 ,Duration of interview
+y7m,Month [number] of interview
+y7d ,Day [number] of interview
+y8 ,Number of callbacks
+y9,Language of interview
+case_id_07,Unique identifier for each observation in 2007 data
+case_id,Unique identifier for each observation in 1993-2007 data
+v1,Support for Democracy
+v2,Evaluation of Democracy 
+v3,Support for Market Economy
+v4,Evaluation of Market Economy
+v5,Democracy: ordinary people
+v5_1,Problems: 1 important
+v6 ,Democracy: foreign practice
+v6_1,Problems: 2 important
+v7 ,Democracy is a good means of solving social conflicts.
+v8,Democracy for the Rich
+v9,Market economy: too much freedom
+v10,Market improves Standard of Living
+v11,Market economy: good example to follow
+v12,Market Economy and Conflict
+v13,Privatisation: for the rich
+v14,Privatisation: for the ordinary people
+v15,Privatisation: social division
+v16 ,Meritocracy: best promoted
+v17 ,Meritocracy: criminals
+v18,Meritocracy: get rich by hard work
+v19,Meritocracy: all equal
+v21,Meritocracy: earn more
+v23,Meritocracy: vote matters
+v24,Meritocracy: wages
+v28,Meritocracy: force for order
+v29,Meritocracy: lazy
+v29_1,Meritocracy: speak freely
+v471,Corruption: Politicians
+v472,Corruption: Public Officials
+v20 ,Government for the benefit of the majority of the society.  
+v22 ,"Bribery, corruption, and ""knowing the right people"" are not important "
+v25 ,Pensions and relief are large enough 
+v26,Freedom of organisation and speech.  
+v27 ,Economic differences are not too big.  
+v30,Good society/freedom of organisation
+v31,Good society/freedom of speech
+v32,Good society/protection of majority
+v33,Good society/protection of authorities
+v33_1,Good society: freedom within the limits of morality
+v34,Good society/centralised economy
+v35,Good society/market economy
+v36,Good society/full employment
+v37,Good society/income differentiation
+v38,Good society/privacy
+v39,Good society/protection of minorities 
+v39_1,Good society: protection of minorities
+v39_2 ,Good society/protection of minorities in russia
+v40 ,Human nature to cooperate 
+v41 ,Most people can be trusted.  
+v42,"If someone is in serious trouble, no one else cares about it  "
+v43,Other people will take advantage of you. 
+v44,Cooperates in his or her own interest 
+v45,Human nature: help
+v46,Government: job
+v47,Government: health care
+v48,Government: old people
+v49,Government: unemployed
+v50,Government: housing
+v413,Government: Childcare
+v473 ,Social Inequality
+v51 ,Large differences in pay are necessary
+v124 ,Differences in income in this country are too large.
+v52,Past Vote
+v53,Reason no vote
+v54,Party Vote 
+v57,Party Supporter
+v58,Party Supported
+v59,Strength of Party Support
+v55,First reason
+v56,Second Reason 
+v60,Future Vote
+v61,First reason
+v62,Second reason
+v63,Vote
+v64,Reason no vote
+v65,Who voted for 
+v66,First reason
+v67,Second reason
+v68,Future Vote
+v69,First reason
+v70,Second reason
+v63_11,Past vote
+v63_12,Reason of no vote
+v63_13,Name voted 
+v63_14,First Reason
+v63_15,Second Reason 
+v400,Past vote 
+v401,Reason of no vote
+v402,Name of president voted
+v403,First Reason
+v404,Second Reason
+v63_1,Vote
+v63_2,Reason no vote
+v63_3,Referendum/vote
+v63_4,Referendum/second chance
+v64_1,Trust to president 
+v65_1,Approval of socioeconomic politics 
+v66_1,Holding of the preschedule president elections
+v67_1,Holding of the preschedule parliamentary election
+v71,Business Association (chamber of industry/trade)
+v72 ,Professional Association 
+v73 ,Trade Union
+v74 ,Farmers' Association
+v75 ,Church or religious group
+v76 ,Local/community group
+v77 ,Sports or social club
+v78 ,Armed forces association
+v79 ,Political Party
+v80 ,Ethnic organization
+v81 ,Factory committee
+v81_1,Civic organizations
+v81_2,Neighborhood watch
+v81_3,Other
+v82 ,Most active
+v83 ,How active
+v84 ,Communist party member
+v85 ,network/1. relationship
+v86 ,network/2. relationship
+v87 ,network/1. freq see each other
+v88 ,network/2. freq see each other
+v89 ,network/1. freq talk politics
+v90 ,network/2. freq talk politics
+v91 ,network/1. work
+v92 ,network/2. work
+v93 ,network/1. ethnicity
+v94 ,network/2. ethnicity
+v95 ,network/1. religion
+v96 ,network/2. religion
+v414,Contact: Relatives on the phone
+v415,Contact: Friends on the phone
+v416,Contact: Neighbours face-to-face
+v417,Contact: Meeting up with relatives
+v418,Contact: Meeting up with friends
+v419,Contact: Meeting up with work colleagues
+v420,Political Interest
+v421,Political Knowledge: Majority Party
+v422,Political Knowledge: Finance Minister
+v423,Welfare Support /Party a vs b
+v424,Welfare Support/ Party c vs a
+v425,Watch Television
+v426,Read Newspaper
+v97 ,Government: Living standard
+v98,Government: Income
+v99,Government: Ownership of industries
+v100,Government: Companies
+v100_1 ,Ownership of privatised enterprises
+v101,Government interference with busine
+v101_1 ,Privatising health service
+v101_2 ,Charging for education
+v101_3 ,High income /taxes
+v101_4 ,Middle income /taxes
+v101_5 ,Low income /taxes
+v102 ,Fair Share
+v103 ,Law: rich and Poor 
+v104 ,Trade Unions
+v105 ,Private enterprise
+v107 ,Differences in income: Prosperity
+v108 ,Profit: standard of living
+v106 ,Public services
+v109 ,Role of gov/income differences
+v110 ,Role of gov/basic income
+v111 ,Self-Reported Ideology
+v112 ,Jobs: Pollution
+v115 ,Income: environment
+v113 ,Nuclear power stations
+v114 ,Control pollution/even prices
+v116_1,Compulsory religious education
+v116 ,Traditional values
+v117 ,Censorship 
+v118 ,Freedom to organize
+v119 ,Homosexuality
+v122 ,Freedom of Religion
+v123 ,Strong hand
+v123_1 ,Death penalty 
+v123_2 ,Abortion 
+v123_3 ,Stiffer sentences
+v125 ,Learn from other countries
+v126 ,Cooperate with other countries
+v127 ,Freedom to emigrate
+v128,Criticism of country
+v129 ,Minority rights 
+v130 ,Citizenship: ethnicity
+v131 ,Ethnicity: benefits
+v132 ,Jews: Power
+v133 ,Gypsies
+v134 ,Language: Schools
+v120 ,Antidemocratic parties
+v121 ,More tolerance
+v120_1 ,Political opposition /criticise
+v120_2 ,Political opposition /viable democracy
+v120_3 ,Every party governs
+v123_5 ,Defeat crime
+v123_6 ,Rights of accused
+v123_7 ,Respect for the law
+v123_8 ,Stronger Economy
+v123_9 ,Compulsory military service
+v123_10 ,Respect to the army
+v124_1 ,Ukrainian army
+v124_3 ,Nuclear weapons in ukraine
+v128_1 ,Western influence corrupting
+v128_2 ,Support country
+v128_3 ,Identify with own country
+v128_4 ,Dissolution of the ussr
+v128_5 ,Unite with romania
+v405 ,Shameful history
+v406 ,West helps russia great
+v407 ,Better with communists
+v129_1 ,Job restriction for jews
+v129_2 ,Expel caucasians 
+v129_3 ,Blame crime on caucasians
+v129_4 ,Expand russia's borders 
+v129_5 ,Russians should be loyal
+v129_6 ,Russians are treated unfair [in h: h3]
+v129_7 ,[country's nationals] in [neighbouring country] are treated unfairly
+v129_8,"Russian government/""the near abroad"""
+v129_9 ,Learn estonian/succeed from russia
+v129_10 ,Region's autonomy/armed forces to keep russia together
+v151_8 ,War in chechnya is right
+v129_11 ,Autonomy for transdniestr
+v408 ,Armed force to keep russia together
+v409 ,Cultural values brought from germany should be returned
+v135 ,European institutions helpful 
+v136 ,Foreign ownership of enterprises 
+v136_1 ,Integrate in the west
+v485,Integrate with the EU
+v431,Institutions to reduce inequality
+v432,Institutions to increase inequality
+v137 ,Inglehart/1.a
+v138 ,Inglehart/2.a
+v139 ,Inglehart/1.b
+v140 ,Inglehart/2.b
+v141 ,Inglehart/1.c
+v142 ,Inglehart/2.c
+v143 ,Inglehart/1. all
+v144 ,Inglehart/2. all
+v145 ,"Inglehart/least important, all"
+v427,Both should contribute to income
+v428,"Men earn money, woman look after home"
+v429,Men should do more household work
+v430,Men should do more childcare
+v146 ,Well informed
+v147 ,Influence on government
+v148 ,Politics complicated 
+v149 ,Duty to vote
+v150 ,Officials don't care 
+v151 ,More participation 
+v152 ,Government: people’s wishes
+v153 ,Parties: the same 
+v154 ,No point in voting
+v155 ,Collectivism/individualism 
+v151_1 ,Concentrate on one day
+v151_2 ,Activity/president
+v151_3 ,Activity/parliament
+v151_4 ,Activity/government
+v151_5 ,Activity/constitutional court
+v151_6 ,Activity/army
+v151_7 ,Activity/party you voted for
+v156 ,Getting ahead: Wealth
+v157 ,Getting ahead: Parnets’ education
+v157a ,Getting ahead: Education
+v158 ,Getting ahead: Hard work
+v159 ,Getting ahead: Ambition
+v160 ,Getting ahead: Natural ability
+v161 ,Getting ahead: Connections
+v162 ,Getting ahead: Political connections
+v162a ,Getting ahead: Political beliefs
+v163 ,Getting ahead: Ethnigity
+v164 ,Getting ahead: Religion
+v165 ,Getting ahead: Area  
+v166 ,Getting ahead: Gender  
+v167 ,Getting ahead: Sector 
+V167_1 ,"Getting ahead: Age, being young or middle aged"
+V167_2 ,Getting ahead: Working abroad
+v168 ,Social Group
+v169 ,Social group/conflict
+v170 ,In common with manual workers
+v171 ,In common with entrepreneurs
+v172 ,In common with managers and administrators
+v173 ,In common with intelligentsia /doctors/lawyers/professionals
+v174 ,In common with peasants /farm workers
+v436,In common with office workers
+v175 ,Standard of Living: manual workers
+v176,Standard of Living: entrepreneurs
+v177 ,Standard of Living: managers and administrators
+v178 ,Standard of Living: intelligentsia /doctors/lawyers/professionals
+v179 ,Standard of Living: peasants /farm workers
+v437,Standard of Living: office workers
+v180 ,Standard of Living (future): manual workers
+v181 ,Standard of Living (future): entrepreneurs
+v182 ,Standard of Living (future): managers and administrators
+v183 ,Standard of Living (future): intelligentsia /doctors/lawyers/professionals
+v184 ,Standard of Living (future): peasants /farm workers
+v438,Standard of Living (future): office workers
+v185 ,Language at home
+v186 ,Other language
+v187 ,First foreign language
+v188,Second foreign language
+v186_1 ,Name of other language
+v186_2 ,Name of second other language
+v189 ,Religion 
+v190 ,Attendance  
+v191 ,Ethnic groups
+v192 ,Ethnic conflict
+v468 ,Common with people your nationality
+v193 ,Majority ethnic group
+v194 ,Group B
+v195 ,Group C
+v196 ,Group D
+v197 ,Group E 
+v197_1,Group F
+v197_2,Group G
+v197_3,Group H
+v197_4,Group I
+v197_5,Group J
+v197_6,Group K
+v197_7,Group L
+v198 ,Education 
+v193_1,standart of living /majority ethnic group
+v193_2 ,standart of living /other
+v193_3 ,standart of living /other
+v193_4 ,standart of living /other
+v193_5 ,standart of living /other
+v193_6 ,standard of living/other
+v193_7 ,standard of living/other
+v193_8 ,standard of living/other
+v193_9 ,standard of living/other
+v193_10,standard of living/other
+v193_11,standard of living/other
+v193_12,standard of living/other
+v410 ,how do you look in future
+v411 ,can you say that your life is arranged
+v199 ,military service
+v202a ,Subjective class (Hungary)
+v200 ,Current situation
+v201 ,Paid job
+v203 ,Hours 
+v204 ,Job change
+v205 ,Reason of job change
+v206 ,Benefits: occupational pension scheme
+v207 ,Benefits: housing
+v208 ,Benefits: medical care
+v209 ,Benefits: holiday facilities
+v210 ,Benefits: food products/subsidised meals
+v211 ,Benefits: other consumer goods
+v212 ,Benefits: childcare facilities
+v433,Benefits: Car
+v434,Benefits: Mobile phone
+v435,Benefits: Laptop
+v213 ,Position at work
+v214 ,Kind of organisation 
+v213b ,Resp: Number of subordinates [Hun]
+v213_1 ,Number of subordinates
+age ,Age (open ended) 
+v298 ,Gender
+age_r ,open ended age response (15 and up only)
+cat_age ,Age categories 
+std_education,
+rclass10,Respondent's class
+pclass10,Partner’s class
+fclass10,Father’s class
+mclass10,
+v215 ,Paid Job
+v226 ,Chance of being fired
+v227 ,Chance of promotion
+v228 ,Top of ladder
+v229 ,Part of promotion ladder
+v230 ,Pay scale
+v231 ,Sick pay
+v232 ,Sickness
+v233 ,Second job
+v235 ,Second job: Hours 
+v236 ,Second job: Position 
+v216 ,Who decide task
+v217 ,Who decide amount of work
+v218 ,Who decide arrival time
+v219 ,Clock/sign in
+v220 ,Paid overtime
+v221 ,Ways of payment/profit share
+v222 ,Ways of payment/hourly wage
+v223 ,Ways of payment/monthly salary
+v224 ,Ways of payment/performance related
+v225 ,Largest proportion of pay
+v236b,Second job: Number of subordinates [Hun]
+v236_1 ,Second job: Number of subordinates
+v237,Marital status  
+v238 ,Partner: Religion 
+v239,Partner: Attendance 
+v240 ,Partner: Ethnic groups 
+v241 ,Partner: Education 
+v242 ,Partner: military service 
+v243 ,Partner: Vurrent Situation
+v244 ,Partner: Paid job
+v246 ,Partner: hours 
+v249  ,Partner: Position 
+v250 ,Partner: Kind of organisation 
+v251 ,Partner: Second job
+v247 ,Partner: Job change
+v248 ,Partner: Reason of job change 
+v249b ,Partner: Number of subordinates [Hun]
+v249_1 ,Partner: Number of subordinates 
+v251_1 ,Partner: Vote /parliament
+v251_2 ,Partner: Reason of no vote/ parliament
+v251_3 ,Partner: Vote / president
+v251_4 ,Partner: Reason of no vote/president
+v252 ,In household: Partner
+v254 ,In household: Parent
+v255 ,In household: Grandparent
+v256 ,In household: Grandchild
+v257 ,In household: Other
+v258 ,Family member in west
+v258_1 ,Family members in NIS
+v258_2,Family members/in which of NIS
+v412 ,Member of family been victim of crime
+v352a ,Number in your household
+v253 ,Childrenin household 
+v451,Worked abroad
+v452,Family members abroad
+v453,Receive money abroad
+v259,Kind of Accommodation 
+v260 ,Ownership
+v261 ,Number of rooms  
+v450,Square meters of household
+v262 ,Car
+v263 ,Washing machine
+v264 ,Land (other than plot attached to main residnce)
+v265 ,Shares
+v266 ,Second home or dacha
+v267 ,"Subscribe TV (cable, satellite) "
+v268 ,Telephone
+v268_1 ,Internet 
+v439,Mobile phone
+v440,Home Cinema
+v441,Computer
+v442,High-Speed (Broadband/Cable) Internet
+v474,Household circumstances
+v443,Neighbourhood problem: Crime
+v444,Neighbourhood problem: Drunks
+v445,Neighbourhood problem: Vandalism
+v446,Neighbourhood problem: Pollution
+v447,Neighbourhood problem: Drugs
+v448,Neighbourhood problem: Rubbish 
+v449,Neighbourhood problem: Troublesome neighbours
+v269 ,Respondent’s monthly income before taxes 
+v482,Household income/total
+v270 ,Main source of income/respondent
+v483,Main source of income/partner
+v484,Savings
+v469,Wages or pension been paid
+v470,Delay in getting paid (days)
+v271 ,Foreign currency
+v272 ,Standard of living 
+v273 ,Standard of living (future)
+v274 ,Standard of living (country)
+v275 ,Standard of living (country future)
+v276 ,Increase Standard of living 
+v277 ,Second source of increase living std
+v278,Increase standard of living
+v279 ,Second increase standard of living
+v475,Household financial circumstances
+v476,Enough money: Medicine
+v477,Enough money: Bills
+v478,Comparative household standard of living
+v479,Access to health care
+v480,Access to education
+v481,Access to cultural goods
+v454,Health in general
+v455,Chronic or long-term health problems
+v456,Limitations because of health problems
+v457,Smoking behavior
+v458,Alcohol/frequency
+v459,Alcohol/volume/beer (330 ml)
+v460,Alcohol/volume/beer (500 ml)
+v461,Alcohol/volume/alcopops
+v462,Alcohol/volume/wine
+v463,Alcohol /volume/vermouth
+v464,Alcohol/volume/vodka
+v465,Alcohol/volume/other spirits
+v466,Height
+v467,Weight
+v280  ,Language in childhood 
+v281 ,Father: living at home 
+v282 ,Father: Religion
+v283 ,Father: Ethnic groups 
+v284 ,Father: Communist party membership
+v285 ,Father: Education 
+v286  ,Father: paid job
+v287b ,Father: Number of subordinates [Hun]
+v288_1 ,Father: Number of subordinates 
+v288 ,Father: Position 
+v289 ,Mother: living at home
+v290 ,Mother: Religion 
+v291 ,Mother: Ethnic groups 
+v292 ,Mother: Communist party membership 
+v293 ,Mother: Education 
+v294 ,Mother: Paid job
+v296 ,Mother: Position 
+v295 ,Mother: Hungarian Occupational Code
+v295b ,Mother: Number of subordinates [Hun]
+v296_1 ,Mother: Number of subordinates 
+FDI,Foreign Direct Investment
+pop,Population
+CPI,Corruption Perceptions Index
+ag_employ,% Employed in Agriculture
+ind_employ,% Employed in Industry
+serv_employ,% Employed in Service
+GDP,Gross Domestic Product
+PPP,Purchasing Price Parity
+GDPpc,GDP per capita
+grow_30yr,Economic growth - 30 yrs
+grow_15yr,Economic growth - 15 yrs
+GINI,Income Inequality
+unemp,Unemployment
+EF,Ethno-fractionalization Index
+plural,Proportion of Largest Ethnic Group
+minor ,Largest Minority Index
+cdiv ,Cultural Diversity Index
+voc_acct ,Voice and Accountability
+pol_stab ,Political Stability
+gov_eff ,Government Effectiveness
+reg_qual ,Regulatory Quality
+rule_law ,Rule of Law
+ctrl_corr ,Control of Corruption
+FH_PR,Political Rights – Freedom House
+FH_CL,Civil Liberties – Freedom House 
+PR_elec,PR: Electoral Process – Freedom House
+PR_PPP,PR: Political Pluralism and Participation – Freedom House
+PR_gov,PR: Functioning of Government – Freedom House
+CL_free,CL: Freedom of Expression and Belief – Freedom House
+CL_AOR,CL: Associational and Organizational Rights – Freedom House
+CL_law,CL: Rule of Law – Freedom House
+CL_rights,CL: Personal Autonomy and Individual Rights – Freedom House
+soc_ben ,Social Spending: General and Central Government
+gini_ch  ,2002-7 Change in GINI Index
+FHscore,Average of Freedom House PR and CL scores

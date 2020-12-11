@@ -1,0 +1,8 @@
+"0","# get weighted means by group"
+"0","Tbl2_rep <- apply(df_orig_complete[,c(""pensions"",""unemployed"",""car_owner"")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,""weight""], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})"
+"0",""
+"0","Tbl2_rep <- as.data.frame(t(round(Tbl2_rep, 3)))"
+"0",""
+"0","Tbl2_rep[nrow(Tbl2_rep)+1,] <- cases"
+"0",""
+"0","kable_styling(kable(Tbl2_rep))"

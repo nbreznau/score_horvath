@@ -1,0 +1,6 @@
+"0","```r
+
+apples <- read.csv(file = \"simdata/apples.csv\", header = T)
+pears <- read.csv(file = \"simdata/pears.csv\", header = T)
+
+```"

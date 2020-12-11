@@ -1,0 +1,283 @@
+---
+title: "Replication of Horvat & Evans 2011"
+output: html_notebook
+---
+
+
+
+```{r setup}
+pacman::p_load("tidyverse","readxl","foreign","skimr","fastDummies","kableExtra","MASS","sjPlot","webshot","knitr")
+```
+
+
+Datafile acquired in a email string from Horvat to Evans to the ultimate source of this aggregate file "Mass_Public_Surveys_1993-2007.dta" with Ksenia Northmore-Ball (Nov. 8th, 2020)
+
+```{r import, warning = F}
+# original data
+df_origa <- readstata13::read.dta13("data/Mass_Public_Surveys_1993-2007.dta")
+df_orig_labels <- readstata13::read.dta13("data/Mass_Public_Surveys_1993-2007.dta", generate.factors = T)
+
+# original tables 1 & 2 from the article
+Tbl1_orig <- read_xlsx("data/orig_tables.xlsx", sheet = "Tbl1", col_names = F)
+Tbl2_orig <- read_xlsx("data/orig_tables.xlsx", sheet = "Tbl2", col_names = F)
+
+# codebook
+codebook <- read.csv("data/codebook.csv", header = T)
+```
+
+```{r orig_tbls}
+Tbl1_orig <- Tbl1_orig[-c(1:3),]
+colnames(Tbl1_orig) <- c("Variable","y93-96 a18-29","y93-96 a30-44","y93-96 a 45-59","y93-96 a60+","y07 18-29","y07 30-44","y07 45-59","y07 60+")
+
+Tbl1_orig[,2:9] <- lapply(Tbl1_orig[,2:9], function (x) ifelse(is.na(x), "", x))
+
+Tbl2_orig <- Tbl2_orig[-c(1:2),]
+
+colnames(Tbl2_orig) <- c("Variable","y93-96 a18-29","y93-96 a30-44","y93-96 a 45-59","y93-96 a60+","y07 18-29","y07 30-44","y07 45-59","y07 60+")
+
+Tbl2_orig[,2:9] <- lapply(Tbl2_orig[,2:9], function (x) ifelse(is.na(x), "", x))
+
+```
+
+|v270 Main source of income| Code|
+|---|-|
+|Earnings from employment (own or partner's)	|1|
+|Pensions and benefits	|2|
+|Student stipend	|3|
+|Other state benefit	|4|
+|Interest from savings or property	|5|
+|Dependent on family/relatives	|6|
+
+|v200 Work Status| Code|
+|---|-|
+|in paid work (including self-employment)	|1|
+|full-time student 	|2|
+|in military service	|3|
+|unemployed	|4|
+|permanently sick or disabled	|5|
+|completely retired from work	|6|
+|looking after the home	|7|
+|other	|8|
+|NA	|9|
+|demobilized	|10|
+|vacation without salary	|11|
+
+Education = "Education is measured by three categories: low,
+middle, and higher education. Low education means
+no educational qualifications beyond the compulsory
+level. Middle education corresponds to completed
+secondary education and higher education corresponds
+to completed further or university education." (p. 713)
+
+ISCED-97
+0 pre-primary
+1 primary/1st stage basic ed
+2 lower secondary
+3 upper secondary
+4 post-secondary non-tertiary
+5 1st stage tertiary
+6 2nd stage tert
+
+**v269 income per month**
+Income recoded into terciles by country-year (see footnote 3)
+
+**Class**
+
+"Social class is measured by a six-category version
+of the Erikson–Goldthorpe class schema (Erikson and
+Goldthorpe, 1992), based on occupational measures of
+class position: service class, routine non-manual workers,
+self-employed workers, manual supervisors and
+skilled manual workers, semi-skilled and unskilled
+manual workers, and farmers or agricultural workers.
+A residual category ‘never had a paying job’ denotes
+respondents whose social class was ambiguous or
+missing but who reported never having been in paid
+employment elsewhere in the survey. Women with
+missing social class data were classified according to
+their husband’s class. Previous research on Eastern
+Europe suggests that occupational measures of class
+position perform adequately in the Eastern European
+context and successfully differentiate individuals in
+terms of their level of income, their degree of economic
+security, and chances of economic advancement
+(Evans, 1997; Evans and Mills, 1999)."
+
+Students dropped
+
+**Age**
+cat_age: cross-temporally and cross-nationally consistent age categories: 
+1:  -29; 2: 30-44; 3: 45-59; 4: 60+
+
+
+
+
+```{r recode}
+df_orig <- df_origa %>%
+  mutate(stdliv_past5 = car::recode(v272, "8 = 3"), # don't knows were recoded into middle cat in original study
+         stdliv_past5_di = car::recode(stdliv_past5, "c(1,2) = 1; c(4,5) = 2; c(3) = 3"),
+         stdliv_next5 = car::recode(v273, "8 = 3"),
+         stdliv_next5_di = car::recode(stdliv_next5, "c(1,2) = 1; c(4,5) = 2; c(3) = 3"),
+         noway_future_improve = as.numeric(as.character(ifelse(v276 == "no any way", 1, 0))),
+         mkt_econ_eval = car::recode(v4, "'dont know' = 3"),
+         mkt_econ_eval_di = car::recode(mkt_econ_eval, "c('very positively','positively') = 1; c('negatively','very negatively') = 2; c('neither positively nor negatively') = 3"),
+         student = ifelse(v200 == 2 | v200 == 9, NA, 0), # remove students and NA's
+         wave = as.numeric(car::recode(year, "c('1993','1994','1995','1996') = '1993'; c('2007') = '2007'; c('1997','1998','2001','2002','2003','2004','2005','2006') = NA")),
+         female = as.numeric(v298) - 1,
+         pensions = ifelse(is.na(v270), NA, ifelse(v270==2, 1, 0)),
+         unemployed = ifelse(v200 == 8, NA, ifelse(v200==4, 1, 0)),
+         car_owner = ifelse(v262 ==1, 1, 0),
+         education = car::recode(std_education, "c(0,1,2) = 1; c(3,4) = 2; c(5,6) = 3; c(99) = NA"), # some had 99 in the std_education variable still, made into primary
+         education_a = car::recode(std_education, "c(1,2,95,96) = 1; c(3,4,5,6,8) = 2; c(7,9,10,11,12) = 3; c(98,99,14) = NA"), # 4 and 5 are questionable categories here
+         education = ifelse(cntry == "russia" & year == 1996, education_a, education),
+         # There is a problem with Russia in 1996, seems that it was not recoded into ISCED
+         EGP6 = car::recode(rclass10, "'Missing in 93-03 data' = 8;'semi-unskilld manual' = 5; 'skilled manual' = 4; 'higher controllers' = 1;'lo controllers' = 1;  'routine nonmanual'= 2; 'sempl without empl' = 3; 'sempl with emp' = 4; 'selfempl farm' = 6; 'farm labor'=6; 'manual supervisor' = 4; 'Missing Occupation Code 07' = 8; 'Not ISKO codes' = 8; 'ISKO Coded - no match' = 8; 'Never had a paying job' = 7"),
+         EGP6 = ifelse(EGP6 == 8 & r2class10 == "never had a paying job", "7", EGP6),
+         EGP6 = ifelse(is.na(v201), EGP6, ifelse(v201 == "no", "7", EGP6)), # never had a paid job
+         EGP6 = ifelse(EGP6 == 8, NA, EGP6)
+         ) %>%
+  group_by(cntry, year) %>%
+  mutate(income = ifelse(is.na(v269), 4, ntile(v269, 3))) %>%
+  ungroup()
+
+
+
+
+# some weights are NA, replace with 1 (actually there are no weights for 1993, so this is not really helpful)
+df_orig$weight <- ifelse(is.na(df_orig$v461), 1, df_orig$v461)
+
+# create complete cases df
+df_orig_complete <- df_orig[!is.na(df_orig["education"]),]
+# df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["income"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["EGP6"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["female"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["wave"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["student"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["pensions"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["unemployed"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["car_owner"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["stdliv_past5"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["stdliv_next5"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["mkt_econ_eval"]),]
+df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["noway_future_improve"]),]
+# create factor dummies
+df_orig_complete <- dummy_cols(df_orig_complete, select_columns = c("EGP6", "income", "education","stdliv_past5_di","stdliv_next5_di","mkt_econ_eval_di"))
+
+#create new group ID
+df_orig_complete$group <- df_orig_complete$cat_age + (100*df_orig_complete$wave)
+
+# cases per group
+
+cases <- df_orig_complete %>%
+  group_by(group) %>%
+  count() %>%
+  ungroup() %>%
+  dplyr::select(-group) %>%
+  t()
+
+  #df_orig <- select(df_orig, v201, rclass10, EGP6, everything())
+```
+
+Replicate Table 1
+
+```{r Tbl1_rep}
+
+
+# get weighted means by group
+Tbl1_rep <- apply(df_orig_complete[,c("education_1","education_2","education_3","income_1","income_2","income_3","EGP6_1","EGP6_2","EGP6_3","EGP6_4","EGP6_5","EGP6_6","EGP6_7","female")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
+
+Tbl1_rep <- as.data.frame(t(round(Tbl1_rep*100, 0)))
+
+
+
+Tbl1_rep[nrow(Tbl1_rep)+1,] <- cases
+
+kable_styling(kable(Tbl1_rep))
+
+Tbl1_rep_out <- kable_styling(kable(Tbl1_rep, col.names = c("Wave 1, Age 18-29","Wave 1, Age 30-49","Wave 1, Age 50-59","Wave 1, Age 60+","Wave 2, Age 18-29","Wave 2, Age 30-49","Wave 2, Age 50-59","Wave 2, Age 60+")))
+save_kable(Tbl1_rep_out, file = "results/Tbl1_rep.htm")
+
+webshot("results/Tbl1_rep.htm", file = "results/Tbl1_rep.png")
+
+
+
+```
+
+The results do not match very well, especially in the education category. Actually it appears that only 2007 has weights. Running Table 1 without weights changes very little. Therefore, a proper test requires hand coding by country; however, the country-specific education codes in the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus 1993 and they have several extra codes than what is listed in the codebook provided. Therefore, this hand coding is not possible. 
+
+```{r tbl1_rep_noweight}
+# Tbl1_repn <- apply(df_orig_complete[,c("education_1","education_2","education_3","income_1","in# come_2","income_3","EGP6_1","EGP6_2","EGP6_3","EGP6_4","EGP6_5","EGP6_6","EGP6_7","female")], 
+# 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), 
+# df_orig_complete$group), function(y) mean(y[,2]))})
+
+# Tbl1_repn <- as.data.frame(t(round(Tbl1_repn, 3)))
+
+# Tbl1_repn[nrow(Tbl1_repn)+1,] <- cases
+```
+
+```{r tbl2_rep}
+# get weighted means by group
+Tbl2_rep <- apply(df_orig_complete[,c("pensions","unemployed","car_owner")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
+
+Tbl2_rep <- as.data.frame(t(round(Tbl2_rep, 3)))
+
+Tbl2_rep[nrow(Tbl2_rep)+1,] <- cases
+
+kable_styling(kable(Tbl2_rep))
+```
+
+```{r tbl3_rep}
+Tbl3_rep <- apply(df_orig_complete[,c("stdliv_past5_di_1","stdliv_past5_di_2","stdliv_next5_di_1","stdliv_next5_di_2","noway_future_improve","mkt_econ_eval_di_1","mkt_econ_eval_di_2")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
+
+Tbl3_rep <- as.data.frame(t(round(Tbl3_rep, 3)))
+
+Tbl3_rep[nrow(Tbl3_rep)+1,] <- cases
+
+kable_styling(kable(Tbl3_rep))
+```
+
+Here I can reproduce Table 3 almost exactly, but only when I **do not use weights**, therefore, it is unclear what it means in the text when they claim that the descriptives are weighted.
+
+```{r tbl3_rep_no}
+Tbl3_rep <- apply(df_orig_complete[,c("stdliv_past5_di_1","stdliv_past5_di_2","stdliv_next5_di_1","stdliv_next5_di_2","noway_future_improve","mkt_econ_eval_di_1","mkt_econ_eval_di_2")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})
+
+Tbl3_rep <- as.data.frame(t(round(Tbl3_rep, 3)))
+
+Tbl3_rep[nrow(Tbl3_rep)+1,] <- cases
+
+kable_styling(kable(Tbl3_rep))
+```
+
+## 5% Prereg Analysis
+
+Here I select out 5% of the sample at random and run their models as part of the pre-registration.
+
+```{r sample5}
+
+set.seed(90210)
+
+df_orig_complete <- df_orig_complete %>%
+  mutate(rand = runif(NROW(df_orig_complete$y1)),
+         p5 = ifelse(rand > 0.05, NA, 1))
+
+df_orig_complete_5 <- df_orig_complete[!is.na(df_orig_complete["p5"]),]
+
+
+
+```
+
+
+```{r tbl5_rep_pre}
+Tbl5_m1 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave), data = df_orig_complete_5, Hess = T)
+
+Tbl5_m2 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income), data = df_orig_complete_5, Hess = T)
+
+Tbl5_m3 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income) + pensions + unemployed + car_owner + factor(cntry), data = df_orig_complete_5, Hess = T)
+
+tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = "stars", show.ci = F, show.loglik = T, rm.terms = "cntry[bulgaria,czech,estonia,hungary,latvia,lithuania,moldova,poland,romania,russia,slovakia,ukraine]", pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07","Age 44-59*year'07","Age >60*year'07","Female","Educ mid","Educ high","EGP: routine non-man","EGP: Self","EGP: Skilled","EGP: Unskilled","EGP: Farmers","EGP: Never had a job","Income mid","Income high","Income missing","Pensions and benefits","Unemployed","Car","1","2","3","4","5","6","7","8","9","10","11","12"), file = "results/Tbl5_rep.htm")
+
+knitr::include_graphics("results/Tbl5_rep.htm")
+
+webshot("results/Tbl5_rep.htm", file = "results/Tbl5_rep.png")
+```
+

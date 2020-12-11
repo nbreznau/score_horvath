@@ -1,0 +1,7 @@
+"0","Tbl3_rep <- apply(df_orig_complete[,c(""stdliv_past5_di_1"",""stdliv_past5_di_2"",""stdliv_next5_di_1"",""stdliv_next5_di_2"",""noway_future_improve"",""mkt_econ_eval_di_1"",""mkt_econ_eval_di_2"")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,""weight""], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})"
+"0",""
+"0","Tbl3_rep <- as.data.frame(t(round(Tbl3_rep, 3)))"
+"0",""
+"0","Tbl3_rep[nrow(Tbl3_rep)+1,] <- cases"
+"0",""
+"0","kable_styling(kable(Tbl3_rep))"
