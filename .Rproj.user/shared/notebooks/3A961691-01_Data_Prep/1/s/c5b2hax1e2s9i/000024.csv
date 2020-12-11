@@ -1,8 +1,0 @@
-"0",""
-"0","Tbl1_rep_out <- kable_styling(kable(Tbl1_rep, col.names = c(""Wave 1, Age 18-29"",""Wave 1, Age 30-49"",""Wave 1, Age 50-59"",""Wave 1, Age 60+"",""Wave 2, Age 18-29"",""Wave 2, Age 30-49"",""Wave 2, Age 50-59"",""Wave 2, Age 60+"")))"
-"0","save_kable(Tbl1_rep_out, file = ""results/Tbl1_rep.htm"")"
-"0",""
-"0","webshot(""results/Tbl1_rep.htm"", file = ""results/Tbl1_rep.png"")"
-"0",""
-"0",""
-"0",""

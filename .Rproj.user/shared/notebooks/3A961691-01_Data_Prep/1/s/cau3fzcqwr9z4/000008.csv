@@ -1,4 +1,0 @@
-"0","tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = ""stars"", show.ci = F, show.loglik = T, rm.terms = ""cntry[]"", pred.labels = c(""k1"",""k2"",""k3"",""k4"",""Age 30-44"",""Age 44-59"",""Age >60"",""Year 2007"",""Age 30-44*year'07"",""Age 44-59*year'07"",""Age >60*year'07"",""Female"",""Educ mid"",""Educ high"",""EGP: routine non-man"",""EGP: Self"",""EGP: Skilled"",""EGP: Unskilled"",""EGP: Farmers"",""EGP: Never had a job"",""Income mid"",""Income high"",""Income missing"",""Pensions and benefits"",""Unemployed"",""Car"",""1"",""2"",""3"",""4"",""5"",""6"",""7"",""8"",""9"",""10"",""11"",""12""), file = ""results/Tbl5_rep.htm"")
-"
-"2","
-"
