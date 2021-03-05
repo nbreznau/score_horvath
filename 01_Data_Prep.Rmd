@@ -1,8 +1,7 @@
 ---
-title: "Replication of Horvat & Evans 2011"
+title: "Tech 1. Data Prep."
 output:
-  html_document:
-    df_print: paged
+  html_document
 ---
 
 
@@ -207,6 +206,11 @@ webshot("results/Tbl1_rep.htm", file = "results/Tbl1_rep.png")
 
 The results do not match very well, especially in the education category. Actually it appears that only 2007 has weights. Running Table 1 without weights changes very little. Therefore, a proper test requires hand coding by country; however, the country-specific education codes in the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus 1993 and they have several extra codes than what is listed in the codebook provided. Therefore, this hand coding is not possible. 
 
+```{r belarus}
+df_orig$v198[df_orig$cntry == "belarus"]
+```
+
+
 ```{r tbl1_rep_noweight}
 # Tbl1_repn <- apply(df_orig_complete[,c("education_1","education_2","education_3","income_1","in# come_2","income_3","EGP6_1","EGP6_2","EGP6_3","EGP6_4","EGP6_5","EGP6_6","EGP6_7","female")], 
 # 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), 
@@ -295,35 +299,8 @@ webshot("results/TblA1_rep.htm", file = "results/TblA1_rep.png")
 
 
 
-## 5% Prereg Analysis
-
-Here I select out 5% of the sample at random and run their models as part of the pre-registration.
-
-```{r sample5}
-
-set.seed(90210)
-
-df_orig_complete <- df_orig_complete %>%
-  mutate(rand = runif(NROW(df_orig_complete$y1)),
-         p5 = ifelse(rand > 0.05, NA, 1))
-
-df_orig_complete_5 <- df_orig_complete[!is.na(df_orig_complete["p5"]),]
-
-
-
+```{r saveout}
+write.csv(df_orig_complete, here::here("data/df_orig_complete.csv"))
 ```
 
-
-```{r tbl5_rep_pre, warning = F, message = F}
-Tbl5_m1 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave), data = df_orig_complete_5, Hess = T)
-
-Tbl5_m2 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income), data = df_orig_complete_5, Hess = T)
-
-Tbl5_m3 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income) + pensions + unemployed + car_owner + factor(cntry), data = df_orig_complete_5, Hess = T)
-
-tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = "results/Tbl5_rep.htm")
-knitr::include_graphics("results/Tbl5_rep.htm")
-
-webshot("results/Tbl5_rep.htm", file = "results/Tbl5_rep.png")
-```
 
