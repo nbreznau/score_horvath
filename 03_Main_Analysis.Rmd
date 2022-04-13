@@ -1,0 +1,42 @@
+---
+title: "03 Main Analysis"
+author: "Nate Breznau"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+pacman::p_load("tidyverse",
+               "kableExtra",
+               "MASS",
+               "sjPlot",
+               "webshot",
+               "knitr")
+```
+
+
+```{r load, warning = F, message = F}
+df_orig_complete <- read_csv(file = here::here("data", "df_orig_complete.csv"))
+```
+
+
+
+```{r tbl5_rep_pre, warning = F, message = F}
+Tbl5_m1 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave), data = df_orig_complete, Hess = T)
+
+Tbl5_m2 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income), data = df_orig_complete, Hess = T)
+
+Tbl5_m3 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income) + pensions + unemployed + car_owner + factor(cntry), data = df_orig_complete, Hess = T)
+
+tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = here::here("results", "Tbl5_rep_f.doc"))
+
+tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = here::here("results", "Tbl5_rep_f.htm"))
+          
+#knitr::include_graphics(here::here("results", "Tbl5_rep_f.htm"))
+
+webshot(here::here("results", "Tbl5_rep_f.htm"), file = here::here("results", "Tbl5_rep_f.png"))
+
+knitr::include_graphics(here::here("results", "Tbl5_rep_f.png"))
+```
+

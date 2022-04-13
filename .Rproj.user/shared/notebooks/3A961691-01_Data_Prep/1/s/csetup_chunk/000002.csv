@@ -1,1 +1,70 @@
 "0","pacman::p_load(""tidyverse"",""readxl"",""foreign"",""skimr"",""fastDummies"",""kableExtra"",""MASS"",""sjPlot"",""webshot"",""knitr"")"
+"2","Installing package into ‘C:/Users/nbreznau/Documents/R/win-library/4.1’
+(as ‘lib’ is unspecified)
+"
+"2","also installing the dependency ‘repr’
+
+"
+"2","Warning:"
+"2"," unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1:
+  cannot open URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1/PACKAGES'
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/repr_1.1.4.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 123017 bytes (120 KB)
+"
+"2","downloaded 120 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/skimr_2.1.3.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 1239157 bytes (1.2 MB)
+"
+"2","downloaded 1.2 MB
+
+"
+"1","package ‘repr’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘skimr’ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\nbreznau\AppData\Local\Temp\Rtmp8Au3DO\downloaded_packages"
+"1",""
+"1","
+"
+"2","
+skimr installed
+"
+"2","Installing package into ‘C:/Users/nbreznau/Documents/R/win-library/4.1’
+(as ‘lib’ is unspecified)
+"
+"2","Warning:"
+"2"," unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1:
+  cannot open URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.1/PACKAGES'
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/fastDummies_1.6.3.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 49924 bytes (48 KB)
+"
+"2","downloaded 48 KB
+
+"
+"1","package ‘fastDummies’ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\nbreznau\AppData\Local\Temp\Rtmp8Au3DO\downloaded_packages"
+"1",""
+"1","
+"
+"2","
+fastDummies installed
+"

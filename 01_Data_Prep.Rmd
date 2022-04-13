@@ -193,6 +193,9 @@ Tbl1_rep <- as.data.frame(t(round(Tbl1_rep*100, 0)))
 
 Tbl1_rep[nrow(Tbl1_rep)+1,] <- cases
 
+# create csv for easy importing in final report
+write.csv(Tbl1_rep, here::here("results", "Tbl1_rep.csv"), row.names = F)
+
 kable_styling(kable(Tbl1_rep))
 
 Tbl1_rep_out <- kable_styling(kable(Tbl1_rep, col.names = c("Wave 1, Age 18-29","Wave 1, Age 30-49","Wave 1, Age 50-59","Wave 1, Age 60+","Wave 2, Age 18-29","Wave 2, Age 30-49","Wave 2, Age 50-59","Wave 2, Age 60+")))
@@ -204,7 +207,7 @@ webshot("results/Tbl1_rep.htm", file = "results/Tbl1_rep.png")
 
 ```
 
-The results do not match very well, especially in the education category. Actually it appears that only 2007 has weights. Running Table 1 without weights changes very little. Therefore, a proper test requires hand coding by country; however, the country-specific education codes in the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus 1993 and they have several extra codes than what is listed in the codebook provided. Therefore, this hand coding is not possible. 
+The results do not match very well, especially in the education category. Actually it appears that only 2007 has weights. Running Table 1 without weights changes very little. Therefore, a proper test requires hand coding by country; however, the country-specific education codes in the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus 1993 and they have several extra codes than what is listed in the codebook provided. Therefore, this hand coding is not possible. Russia has different codes altogether, therefore I had to guess how to code it under the assumption the variable was similarly ordinal.
 
 ```{r belarus}
 df_orig$v198[df_orig$cntry == "belarus"]
@@ -229,6 +232,9 @@ Tbl2_rep <- as.data.frame(t(round(Tbl2_rep, 3)))
 
 Tbl2_rep[nrow(Tbl2_rep)+1,] <- cases
 
+# create csv for easy importing in final report
+write.csv(Tbl2_rep, here::here("results", "Tbl2_rep.csv"), row.names = F)
+
 kable_styling(kable(Tbl2_rep))
 ```
 
@@ -250,6 +256,9 @@ Tbl3_rep <- apply(df_orig_complete[,c("stdliv_past5_di_1","stdliv_past5_di_2","s
 Tbl3_rep <- as.data.frame(t(round(Tbl3_rep, 3)))
 
 Tbl3_rep[nrow(Tbl3_rep)+1,] <- cases
+
+# create csv for easy importing in final report
+write.csv(Tbl3_rep, here::here("results", "Tbl3_rep.csv"), row.names = F)
 
 kable_styling(kable(Tbl3_rep))
 ```
@@ -300,6 +309,11 @@ webshot("results/TblA1_rep.htm", file = "results/TblA1_rep.png")
 
 
 ```{r saveout}
+
+# remove some unused variables to save filesize
+df_orig_complete <- df_orig_complete %>%
+  dplyr::select(stdliv_next5, stdliv_next5_di, stdliv_past5, stdliv_past5_di, cat_age, wave, female, education, EGP6, income, pensions, unemployed, car_owner, cntry)
+
 write.csv(df_orig_complete, here::here("data/df_orig_complete.csv"))
 ```
 
