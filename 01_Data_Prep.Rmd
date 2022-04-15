@@ -1,19 +1,45 @@
 ---
 title: "Tech 1. Data Prep."
 output:
-  html_document
+  html_document: default
+  word_document: default
+  pdf_document: default
 ---
 
+This workflow file takes the source data, recodes variables and prepares descriptive tables for comparison. 
+
+The original Tables 1-3 were extracted from the original study PDF using Adobe Acrobat 'copy with formatting' function and placed into the document 'orig_tables.xlsx'.
+
+Dependent Variables
+
+V272: Compared with five years ago, has your household's standard of living fallen a great deal, fallen a little, stayed about the same, risen a little, or has it risen a lot?
+
+fallen a great deal	1
+fallen a little	2
+stayed about the same	3
+risen a little	4
+risen a lot	5
+(Don't know)	8
+
+V273: And looking ahead over the next five years, do you think that your household's standard of living will fall a great deal from its current level, fall a little, stay about the same as it is now, rise a little, or rise a lot from its current level?
+
+will fall a great deal	1
+will fall a little	2
+will stay about the same	3
+will rise a little	4
+will rise a lot	5
+(Don't know)	8
 
 
 ```{r setup}
 pacman::p_load("tidyverse","readxl","foreign","skimr","fastDummies","kableExtra","MASS","sjPlot","webshot","knitr")
 ```
 
+## Import Data
 
-Datafile acquired in a email string from Horvat to Evans to the ultimate source of this aggregate file "Mass_Public_Surveys_1993-2007.dta" with Ksenia Northmore-Ball (Nov. 8th, 2020)
+Datafile acquired after emails to Horvat then to Evans then to the ultimate source of this aggregate file "Mass_Public_Surveys_1993-2007.dta" with Ksenia Northmore-Ball (Nov. 8th, 2020)
 
-```{r import, warning = F}
+```{r import, warning = F, message = F}
 # original data
 df_origa <- readstata13::read.dta13("data/Mass_Public_Surveys_1993-2007.dta")
 df_orig_labels <- readstata13::read.dta13("data/Mass_Public_Surveys_1993-2007.dta", generate.factors = T)
@@ -21,23 +47,10 @@ df_orig_labels <- readstata13::read.dta13("data/Mass_Public_Surveys_1993-2007.dt
 # original tables 1 & 2 from the article
 Tbl1_orig <- read_xlsx("data/orig_tables.xlsx", sheet = "Tbl1", col_names = F)
 Tbl2_orig <- read_xlsx("data/orig_tables.xlsx", sheet = "Tbl2", col_names = F)
+Tbl3_orig <- read_xlsx("data/orig_tables.xlsx", sheet = "Tbl3", col_names = F)
 
 # codebook
 codebook <- read.csv("data/codebook.csv", header = T)
-```
-
-```{r orig_tbls}
-Tbl1_orig <- Tbl1_orig[-c(1:3),]
-colnames(Tbl1_orig) <- c("Variable","y93-96 a18-29","y93-96 a30-44","y93-96 a 45-59","y93-96 a60+","y07 18-29","y07 30-44","y07 45-59","y07 60+")
-
-Tbl1_orig[,2:9] <- lapply(Tbl1_orig[,2:9], function (x) ifelse(is.na(x), "", x))
-
-Tbl2_orig <- Tbl2_orig[-c(1:2),]
-
-colnames(Tbl2_orig) <- c("Variable","y93-96 a18-29","y93-96 a30-44","y93-96 a 45-59","y93-96 a60+","y07 18-29","y07 30-44","y07 45-59","y07 60+")
-
-Tbl2_orig[,2:9] <- lapply(Tbl2_orig[,2:9], function (x) ifelse(is.na(x), "", x))
-
 ```
 
 |v270 Main source of income| Code|
@@ -111,7 +124,7 @@ cat_age: cross-temporally and cross-nationally consistent age categories:
 1:  -29; 2: 30-44; 3: 45-59; 4: 60+
 
 
-
+## Recode Analysis Variables
 
 ```{r recode, warning = F}
 df_orig <- df_origa %>%
@@ -140,13 +153,22 @@ df_orig <- df_origa %>%
   group_by(cntry, year) %>%
   mutate(income = ifelse(is.na(v269), 4, ntile(v269, 3))) %>%
   ungroup()
+```
 
+## Weights
 
+There are some curiosities with the weights. There are no weights for 1993 and other weights are NA meaning that full weighting is not possible. I recode NA to 1 for now to simply preserve cases.
 
-
+```{r weights, warning = F}
 # some weights are NA, replace with 1 (actually there are no weights for 1993, so this is not really helpful)
 df_orig$weight <- ifelse(is.na(df_orig$v461), 1, df_orig$v461)
+```
 
+## Complete Dataframe
+
+And generate group descriptive means
+
+```{r descgrp, warning = F}
 # create complete cases df
 df_orig_complete <- df_orig[!is.na(df_orig["education"]),]
 # df_orig_complete <- df_orig_complete[!is.na(df_orig_complete["income"]),]
@@ -179,50 +201,158 @@ cases <- df_orig_complete %>%
   #df_orig <- select(df_orig, v201, rclass10, EGP6, everything())
 ```
 
-Replicate Table 1
+## Replicate Table 1
 
 ```{r Tbl1_rep}
-
-
 # get weighted means by group
 Tbl1_rep <- apply(df_orig_complete[,c("education_1","education_2","education_3","income_1","income_2","income_3","EGP6_1","EGP6_2","EGP6_3","EGP6_4","EGP6_5","EGP6_6","EGP6_7","female")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
 
 Tbl1_rep <- as.data.frame(t(round(Tbl1_rep*100, 0)))
 
+Tbl1_rep_unw <- apply(df_orig_complete[,c("education_1","education_2","education_3","income_1","income_2","income_3","EGP6_1","EGP6_2","EGP6_3","EGP6_4","EGP6_5","EGP6_6","EGP6_7","female")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})
 
+Tbl1_rep_unw <- as.data.frame(t(round(Tbl1_rep_unw*100, 0)))
 
 Tbl1_rep[nrow(Tbl1_rep)+1,] <- cases
 
+Tbl1_rep_unw[nrow(Tbl1_rep_unw)+1,] <- cases
+
+rownames(Tbl1_rep)[15] <- "N"
+rownames(Tbl1_rep_unw)[15] <- "N"
+
 # create csv for easy importing in final report
-write.csv(Tbl1_rep, here::here("results", "Tbl1_rep.csv"), row.names = F)
+write.csv(Tbl1_rep, here::here("results", "Tbl1_rep_unw.csv"), row.names = F)
 
-kable_styling(kable(Tbl1_rep))
-
-Tbl1_rep_out <- kable_styling(kable(Tbl1_rep, col.names = c("Wave 1, Age 18-29","Wave 1, Age 30-49","Wave 1, Age 50-59","Wave 1, Age 60+","Wave 2, Age 18-29","Wave 2, Age 30-49","Wave 2, Age 50-59","Wave 2, Age 60+")))
+Tbl1_rep_out <- kable_styling(kable(Tbl1_rep, col.names = c("Wave 1, Age 18-29","Wave 1, Age 30-49","Wave 1, Age 50-59","Wave 1, Age 60+","Wave 2, Age 18-29","Wave 2, Age 30-49","Wave 2, Age 50-59","Wave 2, Age 60+"), caption = "Table 1R. Replicated Weighted. Age and socio-demographic outcomes weighted in percentages by age group"))
 save_kable(Tbl1_rep_out, file = "results/Tbl1_rep.htm")
 
-webshot("results/Tbl1_rep.htm", file = "results/Tbl1_rep.png")
+Tbl1_rep_out_unw <- kable_styling(kable(Tbl1_rep, col.names = c("Wave 1, Age 18-29","Wave 1, Age 30-49","Wave 1, Age 50-59","Wave 1, Age 60+","Wave 2, Age 18-29","Wave 2, Age 30-49","Wave 2, Age 50-59","Wave 2, Age 60+"), caption = "Table 1R. Replicated Unweighted. Age and socio-demographic outcomes weighted in percentages by age group"))
 
 
-
+#webshot("results/Tbl1_rep.htm", file = "results/Tbl1_rep.png")
 ```
 
-The results do not match very well, especially in the education category. Actually it appears that only 2007 has weights. Running Table 1 without weights changes very little. Therefore, a proper test requires hand coding by country; however, the country-specific education codes in the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus 1993 and they have several extra codes than what is listed in the codebook provided. Therefore, this hand coding is not possible. Russia has different codes altogether, therefore I had to guess how to code it under the assumption the variable was similarly ordinal.
+### Table 1R Weighted
+```{r Tbl1_repo}
+Tbl1_rep_out
+
+```
+### Table 1R Unweighted
+
+```{r Tbl1_repounw}
+Tbl1_rep_out_unw
+```
+
+## Table 1 Original
+
+```{r tbl1_orig_comp}
+Tbl1_orig <- Tbl1_orig[-c(1:3),]
+colnames(Tbl1_orig) <- c("Variable","y93-96 a18-29","y93-96 a30-44","y93-96 a 45-59","y93-96 a60+","y07 18-29","y07 30-44","y07 45-59","y07 60+")
+
+Tbl1_orig[,2:9] <- lapply(Tbl1_orig[,2:9], function (x) ifelse(is.na(x), "", x))
+
+Tbl2_orig <- Tbl2_orig[-c(1:2),]
+
+colnames(Tbl2_orig) <- c("Variable","y93-96 a18-29","y93-96 a30-44","y93-96 a 45-59","y93-96 a60+","y07 18-29","y07 30-44","y07 45-59","y07 60+")
+
+Tbl2_orig[,2:9] <- lapply(Tbl2_orig[,2:9], function (x) ifelse(is.na(x), "", x))
+
+Tbl1_orig$Variable <- c(NA, "Education_1_Low", "Education_2_Mid", "Education_3_Hi", NA, "Income_1_Low", "Income_2_Mid", "Income_3_Hi", NA, "EGP6_1_Service", "EGP6_2_Rtn_NonMan", "EGP6_3_SelfEmp", "EGP6_4_SkilMan", "EGP6_5_Unskilled", "EGP6_6_Farmers", "EGP6_7_NeverHadJob", "Female", "N")
+
+Tbl1_orig <- subset(Tbl1_orig, !is.na(Variable))
+
+kable_styling(kable(Tbl1_orig, caption = "Table 1O. Original. Age and socio-demographic outcomes weighted in percentages by age group"))
+```
+
+The results do not match very well, especially in the education category. Actually it appears that only 2007 has weights. Running Table 1 without weights changes very little. Therefore, a proper test requires hand coding by country; however, the country-specific education codes in the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus 1993. Belarus looks ok except two missing codes are not present, but Bulgaria has several extra codes than what is listed in the codebook provided (values 8-12). Therefore, this hand coding is not possible. Russia has different codes altogether, therefore I had to guess how to code it under the assumption the variable was similarly ordinal.
+
+## Education Peculiarities
+
+### ISCED in all countries except Russia
+
+```{r isced check}
+unique(df_orig$std_education[df_orig$cntry != "russia"])
+```
+
+### Russia not in ISCED
+
+Extra categories not in ISCED-97 or in other countries
+
+```{r russiaisced}
+unique(df_orig$std_education[df_orig$cntry == "russia"])
+```
+### Check original education variable
+
+#### Russia
+
+Not coded following original codebook (see "data" folder). At least one category is present in data ("14") that is not in codebook
+
+RUSSIA 1993	
+V198  highest education level
+1  primary school
+2  secondary school
+3  high school
+4  professional courses
+5  vocational school
+6  technical secondary school
+7  vocational post-school
+8  technical college
+9  incomplete high education(institute,university,academy)
+10  high education(institute,university,academy)
+11  additional training courses
+12  degree
+95  no educational qualifications
+96  never went to school
+98  don't know
+
+
+```{r russia}
+unique(df_orig$v198[df_orig$cntry == "russia"])
+```
+
+#### Belarus
+
+BELARUS	 1993
+V198  education
+1  elementary school
+2  junior high school
+3  high school
+4  professional training courses
+5  regular factory-and-workshop school,industrial training scho
+6  industrial training high school
+7  college (for nurses, elementary school teachers, musicians)
+8  technical college
+9  bachelor's degree
+10  master's degree (university, academy etc)
+11  postgraduate courses
+12  Ph. Degree
+95  no certificates of education of any kind
+96  never went to school
+98  don't know
+
 
 ```{r belarus}
-df_orig$v198[df_orig$cntry == "belarus"]
+unique(df_orig$v198[df_orig$cntry == "belarus"])
 ```
 
+#### Bulgaria 
 
-```{r tbl1_rep_noweight}
-# Tbl1_repn <- apply(df_orig_complete[,c("education_1","education_2","education_3","income_1","in# come_2","income_3","EGP6_1","EGP6_2","EGP6_3","EGP6_4","EGP6_5","EGP6_6","EGP6_7","female")], 
-# 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), 
-# df_orig_complete$group), function(y) mean(y[,2]))})
+BULGARIA 1993
+V198  education
+1  NO COMPLETED ED.
+2  ELEMENTARY
+3  PRIMARY
+4  HIGH SCHOOL
+5  SECONDARY VOCATIONAL
+6  COLLEGE
+7  HIGHER
+98  DON T KNOW
 
-# Tbl1_repn <- as.data.frame(t(round(Tbl1_repn, 3)))
-
-# Tbl1_repn[nrow(Tbl1_repn)+1,] <- cases
+```{r bulgaria}
+unique(df_orig$v198[df_orig$cntry == "belarus"])
 ```
+
+## Table 2 Replicated
 
 ```{r tbl2_rep}
 # get weighted means by group
@@ -232,11 +362,25 @@ Tbl2_rep <- as.data.frame(t(round(Tbl2_rep, 3)))
 
 Tbl2_rep[nrow(Tbl2_rep)+1,] <- cases
 
+rownames(Tbl2_rep)[4] <- "N"
+
 # create csv for easy importing in final report
 write.csv(Tbl2_rep, here::here("results", "Tbl2_rep.csv"), row.names = F)
 
-kable_styling(kable(Tbl2_rep))
+Tbl2_rep[1,] <- round(as.numeric(Tbl2_rep[1,])*100,0)
+Tbl2_rep[2,] <- round(as.numeric(Tbl2_rep[2,])*100,0)
+Tbl2_rep[3,] <- round(as.numeric(Tbl2_rep[3,])*100,0)
+Tbl2_rep[4,] <- round(as.numeric(Tbl2_rep[4,]),0)
+
+kable_styling(kable(Tbl2_rep, caption = "Table 2R. Replicated. Age-based inequality in resources in percentage", col.names = c("Wave 1, Age 18-29", "Wave 1, Age 30-44", "Wave 1, Age 45-59", "Wave 1, 60+", "Wave 2, Age 18-29", "Wave 2, Age 30-44", "Wave 2, Age 45-59", "Wave 2, 60+")))
 ```
+
+## Table 2. Original
+
+```{r Tbl2}
+kable_styling(kable(Tbl2_orig, caption = "Table 2O. Original. Age-based inequality in resources in percentage"))
+```
+## Table 3R. Replicated Weights.
 
 ```{r tbl3_rep}
 Tbl3_rep <- apply(df_orig_complete[,c("stdliv_past5_di_1","stdliv_past5_di_2","stdliv_next5_di_1","stdliv_next5_di_2","noway_future_improve","mkt_econ_eval_di_1","mkt_econ_eval_di_2")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
@@ -245,23 +389,57 @@ Tbl3_rep <- as.data.frame(t(round(Tbl3_rep, 3)))
 
 Tbl3_rep[nrow(Tbl3_rep)+1,] <- cases
 
-kable_styling(kable(Tbl3_rep))
+rownames(Tbl3_rep)[8] <- "N"
+
+Tbl3_rep[1,] <- round(as.numeric(Tbl3_rep[1,])*100,0)
+Tbl3_rep[2,] <- round(as.numeric(Tbl3_rep[2,])*100,0)
+Tbl3_rep[3,] <- round(as.numeric(Tbl3_rep[3,])*100,0)
+Tbl3_rep[4,] <- round(as.numeric(Tbl3_rep[4,])*100,0)
+Tbl3_rep[5,] <- round(as.numeric(Tbl3_rep[5,])*100,0)
+Tbl3_rep[6,] <- round(as.numeric(Tbl3_rep[6,])*100,0)
+Tbl3_rep[7,] <- round(as.numeric(Tbl3_rep[7,])*100,0)
+Tbl3_rep[8,] <- round(as.numeric(Tbl3_rep[8,]),0)
+
+kable_styling(kable(Tbl3_rep, caption = "Table 3R. Replicated Weights. Age-based inequality in economic experience in percentages", col.names = c("Wave 1, Age 18-29", "Wave 1, Age 30-44", "Wave 1, Age 45-59", "Wave 1, 60+", "Wave 2, Age 18-29", "Wave 2, Age 30-44", "Wave 2, Age 45-59", "Wave 2, 60+")))
 ```
 
 Here I can reproduce Table 3 almost exactly, but only when I **do not use weights**, therefore, it is unclear what it means in the text when they claim that the descriptives are weighted.
 
 ```{r tbl3_rep_no}
-Tbl3_rep <- apply(df_orig_complete[,c("stdliv_past5_di_1","stdliv_past5_di_2","stdliv_next5_di_1","stdliv_next5_di_2","noway_future_improve","mkt_econ_eval_di_1","mkt_econ_eval_di_2")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})
+Tbl3_rep_n <- apply(df_orig_complete[,c("stdliv_past5_di_1","stdliv_past5_di_2","stdliv_next5_di_1","stdliv_next5_di_2","noway_future_improve","mkt_econ_eval_di_1","mkt_econ_eval_di_2")], 2, function(x) {sapply(split(data.frame(df_orig_complete[,"weight"], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})
 
-Tbl3_rep <- as.data.frame(t(round(Tbl3_rep, 3)))
+Tbl3_rep_n <- as.data.frame(t(round(Tbl3_rep_n, 3)))
 
-Tbl3_rep[nrow(Tbl3_rep)+1,] <- cases
+Tbl3_rep_n[nrow(Tbl3_rep_n)+1,] <- cases
+
+rownames(Tbl3_rep_n)[7] <- "N"
+
+Tbl3_rep_n[1,] <- round(as.numeric(Tbl3_rep_n[1,])*100,0)
+Tbl3_rep_n[2,] <- round(as.numeric(Tbl3_rep_n[2,])*100,0)
+Tbl3_rep_n[3,] <- round(as.numeric(Tbl3_rep_n[3,])*100,0)
+Tbl3_rep_n[4,] <- round(as.numeric(Tbl3_rep_n[4,])*100,0)
+Tbl3_rep_n[5,] <- round(as.numeric(Tbl3_rep_n[5,])*100,0)
+Tbl3_rep_n[6,] <- round(as.numeric(Tbl3_rep_n[6,])*100,0)
+Tbl3_rep_n[7,] <- round(as.numeric(Tbl3_rep_n[7,])*100,0)
+Tbl3_rep_n[8,] <- round(as.numeric(Tbl3_rep_n[8,]),0)
 
 # create csv for easy importing in final report
-write.csv(Tbl3_rep, here::here("results", "Tbl3_rep.csv"), row.names = F)
+write.csv(Tbl3_rep_n, here::here("results", "Tbl3_rep_n.csv"), row.names = F)
 
-kable_styling(kable(Tbl3_rep))
+kable_styling(kable(Tbl3_rep_n, caption = "Table 3R. Replicated No Weights. Age-based inequality in economic experience in percentages", col.names = c("Wave 1, Age 18-29", "Wave 1, Age 30-44", "Wave 1, Age 45-59", "Wave 1, 60+", "Wave 2, Age 18-29", "Wave 2, Age 30-44", "Wave 2, Age 45-59", "Wave 2, 60+")))
 ```
+## Table 3O. Original
+
+```{r Tbl3_orig}
+colnames(Tbl3_orig) <- c("Variable", "Wave 1, Age 18-29", "Wave 1, Age 30-44", "Wave 1, Age 45-59", "Wave 1, 60+", "Wave 2, Age 18-29", "Wave 2, Age 30-44", "Wave 2, Age 45-59", "Wave 2, 60+")
+
+Tbl3_orig$Variable <- c(NA, "stdliv_past5_fallen","stdliv_past5_risen", NA, "stdliv_next5_fallen","stdliv_next5_risen","noway_future_improve",NA, "mkt_econ_eval_pos","mkt_econ_eval_neg", "N")
+
+Tbl3_orig <- subset(Tbl3_orig, !is.na(Variable))
+
+kable_styling(kable(Tbl3_orig, caption = "Table 3O. Original. Age-based inequality in economic experience in percentages"))
+```
+
 ### Table A.1
 
 Just to check the sample
@@ -304,17 +482,23 @@ TblA1r <- kable_styling(kable(TblA1_rep))
 save_kable(TblA1r, file = "results/TblA1_rep.htm")
 
 webshot("results/TblA1_rep.htm", file = "results/TblA1_rep.png")
+
+kable_styling(kable(TblA1_rep, caption = "Table 1.A Replicated"))
 ```
 
 
+## Save Final DF
 
 ```{r saveout}
-
 # remove some unused variables to save filesize
 df_orig_complete <- df_orig_complete %>%
-  dplyr::select(stdliv_next5, stdliv_next5_di, stdliv_past5, stdliv_past5_di, cat_age, wave, female, education, EGP6, income, pensions, unemployed, car_owner, cntry)
+  dplyr::select(stdliv_next5, stdliv_next5_di, stdliv_past5, stdliv_past5_di, cat_age, wave, female, education, EGP6, income, pensions, unemployed, car_owner, cntry, y1)
 
-write.csv(df_orig_complete, here::here("data/df_orig_complete.csv"))
+write.csv(df_orig_complete, here::here("data/df_orig_complete.csv"), row.names = F)
 ```
 
+### Colophon
+```{r colophon}
+sessionInfo()
+```
 

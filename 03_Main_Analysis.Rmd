@@ -12,7 +12,9 @@ pacman::p_load("tidyverse",
                "MASS",
                "sjPlot",
                "webshot",
-               "knitr")
+               "knitr",
+               "ggplot2",
+               "utils")
 ```
 
 
@@ -29,14 +31,99 @@ Tbl5_m2 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(c
 
 Tbl5_m3 <- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income) + pensions + unemployed + car_owner + factor(cntry), data = df_orig_complete, Hess = T)
 
-tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = here::here("results", "Tbl5_rep_f.doc"))
+tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, transform = NULL, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = here::here("results", "Tbl5_rep_f.doc"))
 
-tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = here::here("results", "Tbl5_rep_f.htm"))
+tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, transform = NULL, p.style = "stars", show.ci = F, show.loglik = T,  pred.labels = c("k1","k2","k3","k4","Age 30-44","Age 44-59","Age >60","Year 2007","Age 30-44*year'07", "Age 44-59*year'07", "Age >60*year'07", "Female", "Educ mid", "Educ high" ,"EGP: routine non-man", "EGP: Self", "EGP: Skilled", "EGP: Unskilled", "EGP: Farmers", "EGP: Never had a job", "Income mid", "Income high","Income missing", "Pensions and benefits","Unemployed", "Car","bulgaria", "czech", "estonia", "hungary","latvia", "lithuania", "moldova","poland", "romania", "russia","slovakia", "ukraine"), file = here::here("results", "Tbl5_rep_f.htm"))
           
 #knitr::include_graphics(here::here("results", "Tbl5_rep_f.htm"))
 
-webshot(here::here("results", "Tbl5_rep_f.htm"), file = here::here("results", "Tbl5_rep_f.png"))
+#webshot(here::here("results", "Tbl5_rep_f.htm"), file = here::here("results", "Tbl5_rep_f.png"))
 
-knitr::include_graphics(here::here("results", "Tbl5_rep_f.png"))
+
+#knitr::include_graphics(here::here("results", "Tbl5_rep_f.png"))
+```
+## Marginal Estimates
+
+The coefficients in the table are different from the original results, but they are also different from the Stata results (see 03_Main_Analysis_Stata.do). Clearly the ordred probit models use slightly different estimation techniques. But, the quesiton is: are the predicted values the same?
+
+### Calculate Margins
+
+```{r r_margins, warning = F}
+newdat <- data.frame(
+  cat_age = rep(1:4, 2),
+  wave = c(rep(1993, 4), rep(2007, 4)),
+  female = rep(0, 8),
+  education = rep(1,8),
+  EGP6 = rep(1,8),
+  income = rep(1,8),
+  pensions = rep(mean(df_orig_complete$pensions, na.rm = T),8),
+  unemployed = rep(mean(df_orig_complete$unemployed, na.rm = T),8), 
+  car_owner = rep(mean(df_orig_complete$car_owner, na.rm = T),8),
+  cntry = "belarus") # ref cat
+
+newdat <- cbind(newdat, predict(Tbl5_m3, newdat, type = "probs"))
+```
+
+### Import Stata Results
+```{r stata_marg}
+Tbl5_m3_Stata <- read_csv(here::here("results","Tbl5_m3.csv"))
+```
+
+### Combine into Margins Comparison Table
+
+```{r marg_comp, warning = F}
+Tbl5_marg_comp <- newdat %>%
+  dplyr::select(wave, cat_age, `1`, `2`, `3`, `4`, `5`)
+
+colnames(Tbl5_marg_comp) <- c("wave", "age_cat", "fall_alot", "fall", "stay_same", "rise", "rise_alot")
+
+# add Stata results
+Tbl5_marg_comp[9:16,] <- NA
+Tbl5_marg_comp$Software <- c(rep("R polr",8), rep("Stata oprobit", 8))
+Tbl5_marg_comp[9:16,1:2] <- Tbl5_marg_comp[1:8,1:2]
+
+#sort Stata data
+Tbl5_m3_Stata <- Tbl5_m3_Stata[order( Tbl5_m3_Stata[,"outcome"], Tbl5_m3_Stata[,"wave"] ),]
+
+Tbl5_marg_comp$fall_alot[9:16] <- Tbl5_m3_Stata$margin[1:8]
+Tbl5_marg_comp$fall[9:16] <- Tbl5_m3_Stata$margin[9:16]
+Tbl5_marg_comp$stay_same[9:16] <- Tbl5_m3_Stata$margin[17:24]
+Tbl5_marg_comp$rise[9:16] <- Tbl5_m3_Stata$margin[25:32]
+Tbl5_marg_comp$rise_alot[9:16] <- Tbl5_m3_Stata$margin[33:40]
+
+```
+
+### Comparison
+
+```{r viz}
+Tbl5_marg_comp %>%
+  subset(age_cat == 1 | age_cat == 4) %>%
+  ggplot(aes(y = (fall_alot+fall), x = wave, color = interaction(Software,age_cat))) +
+  geom_point() +
+  geom_line() +
+  labs(y = "Predicted Likelihood of Percieved Standard\nof Living Falling in the Next 5 Years", x = "Survey Wave") +
+  scale_color_manual(name = "Age group &\nSoftware used", 
+                       values = c("#481567FF", 
+                                  "#238A8DFF", 
+                                  "#453781FF", 
+                                  "#29AF7FFF"), 
+                       labels = c("Age 19-29\nusing R polr", "Age 19-29\nusing Stata oprobit", "Age 60+\nusing R polr", "Age 60+\nusing Stata oprobit")) +
+  scale_x_discrete(limits = c(1993,2007)) +
+  theme_classic()
+  
+```
+
+## Table Comparing Stata and R Margins
+
+```{r printout}
+kable_styling(kable(Tbl5_marg_comp))
+```
+
+
+## Colophon
+
+```{r}
+sessionInfo()
+
 ```
 

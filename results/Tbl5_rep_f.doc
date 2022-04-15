@@ -7,237 +7,237 @@
 </tr>
 <tr>
 <td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  text-align:left; ">Predictors</td>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">Odds Ratios</td>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">Odds Ratios</td>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">Odds Ratios</td>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">Log-Odds</td>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">Log-Odds</td>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">Log-Odds</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">k1</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.08 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.09 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.11 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;2.51 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;2.45 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;2.21 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">k2</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.20 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.21 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.28 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;1.61 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;1.54 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;1.29 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">k3</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.80 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.98 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.70 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.59 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.68 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.99 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">k4</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">24.01 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">27.06 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">38.22 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.18 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.30 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.64 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Age 30-44</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.66 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.63 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.63 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.41 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.46 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.46 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Age 44-59</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.44 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.44 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.44 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.81 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.82 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.82 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Age >60</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.38 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.44 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.47 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.97 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.82 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.75 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Year 2007</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.11 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.08 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.12 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.75 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.73 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.75 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Age 30-44*year'07</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.00 <sup></sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.02 <sup></sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.98 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.00 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.02 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.02 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Age 44-59*year'07</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.90 <sup></sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.90 <sup></sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.90 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.11 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.10 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.11 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Age >60*year'07</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.68 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.67 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.68 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.38 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.40 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.39 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Female</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.86 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.90 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.15 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.10 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Educ mid</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.08 <sup>**</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.02 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.08 <sup>**</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.02 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Educ high</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.23 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.18 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.21 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.17 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">EGP: routine non-man</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.92 <sup>*</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.94 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.08 <sup>*</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.06 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">EGP: Self</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.24 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.29 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.22 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.26 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">EGP: Skilled</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.85 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.87 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.16 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.14 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">EGP: Unskilled</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.84 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.88 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.17 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.13 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">EGP: Farmers</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.84 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.87 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.18 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.14 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">EGP: Never had a job</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.72 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.83 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.32 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.19 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Income mid</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.15 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.11 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.14 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.11 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Income high</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.51 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.43 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.41 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.36 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Income missing</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.24 <sup>*</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.20 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.21 <sup>*</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.18 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Pensions and benefits</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.91 <sup>**</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.09 <sup>**</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Unemployed</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.82 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.20 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">Car</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.31 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.27 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">bulgaria</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.02 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.02 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">czech</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.39 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.33 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">estonia</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.93 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.66 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">hungary</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.79 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.24 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">latvia</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.06 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.72 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lithuania</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.79 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.58 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">moldova</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.76 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.27 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">poland</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.31 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.27 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">romania</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.50 <sup>***</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.40 <sup>***</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">russia</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.17 <sup>**</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.15 <sup>**</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">slovakia</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.00 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.00 <sup></sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ukraine</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.88 <sup>*</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.12 <sup>*</sup></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>

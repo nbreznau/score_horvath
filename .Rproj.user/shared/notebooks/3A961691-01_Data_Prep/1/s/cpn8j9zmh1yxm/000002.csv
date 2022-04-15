@@ -1,7 +1,0 @@
-"0","# Tbl1_repn <- apply(df_orig_complete[,c(""education_1"",""education_2"",""education_3"",""income_1"",""in# come_2"",""income_3"",""EGP6_1"",""EGP6_2"",""EGP6_3"",""EGP6_4"",""EGP6_5"",""EGP6_6"",""EGP6_7"",""female"")], "
-"0","# 2, function(x) {sapply(split(data.frame(df_orig_complete[,""weight""], x), "
-"0","# df_orig_complete$group), function(y) mean(y[,2]))})"
-"0",""
-"0","# Tbl1_repn <- as.data.frame(t(round(Tbl1_repn, 3)))"
-"0",""
-"0","# Tbl1_repn[nrow(Tbl1_repn)+1,] <- cases"

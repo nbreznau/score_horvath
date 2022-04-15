@@ -9,9 +9,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Nate Breznau" />
 
+<meta name="date" content="2022-04-15" />
 
-<title>Tech 1. Data Prep.</title>
+<title>03 Main Analysis</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -585,3259 +587,1695 @@ pre code {
 
 
 
-<h1 class="title toc-ignore">Tech 1. Data Prep.</h1>
+<h1 class="title toc-ignore">03 Main Analysis</h1>
+<h4 class="author">Nate Breznau</h4>
+<h4 class="date">2022-04-15</h4>
 
 </div>
 
 
-<p>This workflow file takes the source data, recodes variables and
-prepares descriptive tables for comparison.</p>
-<p>The original Tables 1-3 were extracted from the original study PDF
-using Adobe Acrobat ‘copy with formatting’ function and placed into the
-document ‘orig_tables.xlsx’.</p>
-<pre class="r"><code>pacman::p_load(&quot;tidyverse&quot;,&quot;readxl&quot;,&quot;foreign&quot;,&quot;skimr&quot;,&quot;fastDummies&quot;,&quot;kableExtra&quot;,&quot;MASS&quot;,&quot;sjPlot&quot;,&quot;webshot&quot;,&quot;knitr&quot;)</code></pre>
-<div id="import-data" class="section level2">
-<h2>Import Data</h2>
-<p>Datafile acquired after emails to Horvat then to Evans then to the
-ultimate source of this aggregate file
-“Mass_Public_Surveys_1993-2007.dta” with Ksenia Northmore-Ball
-(Nov. 8th, 2020)</p>
-<pre class="r"><code># original data
-df_origa &lt;- readstata13::read.dta13(&quot;data/Mass_Public_Surveys_1993-2007.dta&quot;)
-df_orig_labels &lt;- readstata13::read.dta13(&quot;data/Mass_Public_Surveys_1993-2007.dta&quot;, generate.factors = T)
+<pre class="r"><code>df_orig_complete &lt;- read_csv(file = here::here(&quot;data&quot;, &quot;df_orig_complete.csv&quot;))</code></pre>
+<pre class="r"><code>Tbl5_m1 &lt;- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave), data = df_orig_complete, Hess = T)
 
-# original tables 1 &amp; 2 from the article
-Tbl1_orig &lt;- read_xlsx(&quot;data/orig_tables.xlsx&quot;, sheet = &quot;Tbl1&quot;, col_names = F)
-Tbl2_orig &lt;- read_xlsx(&quot;data/orig_tables.xlsx&quot;, sheet = &quot;Tbl2&quot;, col_names = F)
-Tbl3_orig &lt;- read_xlsx(&quot;data/orig_tables.xlsx&quot;, sheet = &quot;Tbl3&quot;, col_names = F)
+Tbl5_m2 &lt;- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income), data = df_orig_complete, Hess = T)
 
-# codebook
-codebook &lt;- read.csv(&quot;data/codebook.csv&quot;, header = T)</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th>v270 Main source of income</th>
-<th>Code</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Earnings from employment (own or partner’s)</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td>Pensions and benefits</td>
-<td>2</td>
-</tr>
-<tr class="odd">
-<td>Student stipend</td>
-<td>3</td>
-</tr>
-<tr class="even">
-<td>Other state benefit</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td>Interest from savings or property</td>
-<td>5</td>
-</tr>
-<tr class="even">
-<td>Dependent on family/relatives</td>
-<td>6</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr class="header">
-<th>v200 Work Status</th>
-<th>Code</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>in paid work (including self-employment)</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td>full-time student</td>
-<td>2</td>
-</tr>
-<tr class="odd">
-<td>in military service</td>
-<td>3</td>
-</tr>
-<tr class="even">
-<td>unemployed</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td>permanently sick or disabled</td>
-<td>5</td>
-</tr>
-<tr class="even">
-<td>completely retired from work</td>
-<td>6</td>
-</tr>
-<tr class="odd">
-<td>looking after the home</td>
-<td>7</td>
-</tr>
-<tr class="even">
-<td>other</td>
-<td>8</td>
-</tr>
-<tr class="odd">
-<td>NA</td>
-<td>9</td>
-</tr>
-<tr class="even">
-<td>demobilized</td>
-<td>10</td>
-</tr>
-<tr class="odd">
-<td>vacation without salary</td>
-<td>11</td>
-</tr>
-</tbody>
-</table>
-<p>Education = “Education is measured by three categories: low, middle,
-and higher education. Low education means no educational qualifications
-beyond the compulsory level. Middle education corresponds to completed
-secondary education and higher education corresponds to completed
-further or university education.” (p. 713)</p>
-<p>ISCED-97 0 pre-primary 1 primary/1st stage basic ed 2 lower secondary
-3 upper secondary 4 post-secondary non-tertiary 5 1st stage tertiary 6
-2nd stage tert</p>
-<p><strong>v269 income per month</strong> Income recoded into terciles
-by country-year (see footnote 3)</p>
-<p><strong>Class</strong></p>
-<p>“Social class is measured by a six-category version of the
-Erikson–Goldthorpe class schema (Erikson and Goldthorpe, 1992), based on
-occupational measures of class position: service class, routine
-non-manual workers, self-employed workers, manual supervisors and
-skilled manual workers, semi-skilled and unskilled manual workers, and
-farmers or agricultural workers. A residual category ‘never had a paying
-job’ denotes respondents whose social class was ambiguous or missing but
-who reported never having been in paid employment elsewhere in the
-survey. Women with missing social class data were classified according
-to their husband’s class. Previous research on Eastern Europe suggests
-that occupational measures of class position perform adequately in the
-Eastern European context and successfully differentiate individuals in
-terms of their level of income, their degree of economic security, and
-chances of economic advancement (Evans, 1997; Evans and Mills,
-1999).”</p>
-<p>Students dropped</p>
-<p><strong>Age</strong> cat_age: cross-temporally and cross-nationally
-consistent age categories: 1: -29; 2: 30-44; 3: 45-59; 4: 60+</p>
-</div>
-<div id="recode-analysis-variables" class="section level2">
-<h2>Recode Analysis Variables</h2>
-<pre class="r"><code>df_orig &lt;- df_origa %&gt;%
-  mutate(stdliv_past5 = car::recode(v272, &quot;8 = 3&quot;), # don&#39;t knows were recoded into middle cat in original study
-         stdliv_past5_di = car::recode(stdliv_past5, &quot;c(1,2) = 1; c(4,5) = 2; c(3) = 3&quot;),
-         stdliv_next5 = car::recode(v273, &quot;8 = 3&quot;),
-         stdliv_next5_di = car::recode(stdliv_next5, &quot;c(1,2) = 1; c(4,5) = 2; c(3) = 3&quot;),
-         noway_future_improve = as.numeric(as.character(ifelse(v276 == &quot;no any way&quot;, 1, 0))),
-         mkt_econ_eval = car::recode(v4, &quot;&#39;dont know&#39; = 3&quot;),
-         mkt_econ_eval_di = car::recode(mkt_econ_eval, &quot;c(&#39;very positively&#39;,&#39;positively&#39;) = 1; c(&#39;negatively&#39;,&#39;very negatively&#39;) = 2; c(&#39;neither positively nor negatively&#39;) = 3&quot;),
-         student = ifelse(v200 == 2 | v200 == 9, NA, 0), # remove students and NA&#39;s
-         wave = as.numeric(car::recode(year, &quot;c(&#39;1993&#39;,&#39;1994&#39;,&#39;1995&#39;,&#39;1996&#39;) = &#39;1993&#39;; c(&#39;2007&#39;) = &#39;2007&#39;; c(&#39;1997&#39;,&#39;1998&#39;,&#39;2001&#39;,&#39;2002&#39;,&#39;2003&#39;,&#39;2004&#39;,&#39;2005&#39;,&#39;2006&#39;) = NA&quot;)),
-         female = as.numeric(v298) - 1,
-         pensions = ifelse(is.na(v270), NA, ifelse(v270==2, 1, 0)),
-         unemployed = ifelse(v200 == 8, NA, ifelse(v200==4, 1, 0)),
-         car_owner = ifelse(v262 ==1, 1, 0),
-         education = car::recode(std_education, &quot;c(0,1,2) = 1; c(3,4) = 2; c(5,6) = 3; c(99) = NA&quot;), # some had 99 in the std_education variable still, made into primary
-         education_a = car::recode(std_education, &quot;c(1,2,95,96) = 1; c(3,4,5,6,8) = 2; c(7,9,10,11,12) = 3; c(98,99,14) = NA&quot;), # 4 and 5 are questionable categories here
-         education = ifelse(cntry == &quot;russia&quot; &amp; year == 1996, education_a, education),
-         # There is a problem with Russia in 1996, seems that it was not recoded into ISCED
-         EGP6 = car::recode(rclass10, &quot;&#39;Missing in 93-03 data&#39; = 8;&#39;semi-unskilld manual&#39; = 5; &#39;skilled manual&#39; = 4; &#39;higher controllers&#39; = 1;&#39;lo controllers&#39; = 1;  &#39;routine nonmanual&#39;= 2; &#39;sempl without empl&#39; = 3; &#39;sempl with emp&#39; = 4; &#39;selfempl farm&#39; = 6; &#39;farm labor&#39;=6; &#39;manual supervisor&#39; = 4; &#39;Missing Occupation Code 07&#39; = 8; &#39;Not ISKO codes&#39; = 8; &#39;ISKO Coded - no match&#39; = 8; &#39;Never had a paying job&#39; = 7&quot;),
-         EGP6 = ifelse(EGP6 == 8 &amp; r2class10 == &quot;never had a paying job&quot;, &quot;7&quot;, EGP6),
-         EGP6 = ifelse(is.na(v201), EGP6, ifelse(v201 == &quot;no&quot;, &quot;7&quot;, EGP6)), # never had a paid job
-         EGP6 = ifelse(EGP6 == 8, NA, EGP6)
-         ) %&gt;%
-  group_by(cntry, year) %&gt;%
-  mutate(income = ifelse(is.na(v269), 4, ntile(v269, 3))) %&gt;%
-  ungroup()</code></pre>
-</div>
-<div id="weights" class="section level2">
-<h2>Weights</h2>
-<p>There are some curiosities with the weights. There are no weights for
-1993 and other weights are NA meaning that full weighting is not
-possible. I recode NA to 1 for now to simply preserve cases.</p>
-<pre class="r"><code># some weights are NA, replace with 1 (actually there are no weights for 1993, so this is not really helpful)
-df_orig$weight &lt;- ifelse(is.na(df_orig$v461), 1, df_orig$v461)</code></pre>
-</div>
-<div id="complete-dataframe" class="section level2">
-<h2>Complete Dataframe</h2>
-<p>And generate group descriptive means</p>
-<pre class="r"><code># create complete cases df
-df_orig_complete &lt;- df_orig[!is.na(df_orig[&quot;education&quot;]),]
-# df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;income&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;EGP6&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;female&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;wave&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;student&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;pensions&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;unemployed&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;car_owner&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;stdliv_past5&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;stdliv_next5&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;mkt_econ_eval&quot;]),]
-df_orig_complete &lt;- df_orig_complete[!is.na(df_orig_complete[&quot;noway_future_improve&quot;]),]
-# create factor dummies
-df_orig_complete &lt;- dummy_cols(df_orig_complete, select_columns = c(&quot;EGP6&quot;, &quot;income&quot;, &quot;education&quot;,&quot;stdliv_past5_di&quot;,&quot;stdliv_next5_di&quot;,&quot;mkt_econ_eval_di&quot;))
+Tbl5_m3 &lt;- polr(factor(stdliv_next5) ~ factor(cat_age) + factor(wave) + factor(cat_age)*factor(wave) + female + factor(education) + factor(EGP6) + factor(income) + pensions + unemployed + car_owner + factor(cntry), data = df_orig_complete, Hess = T)
 
-#create new group ID
-df_orig_complete$group &lt;- df_orig_complete$cat_age + (100*df_orig_complete$wave)
-
-# cases per group
-
-cases &lt;- df_orig_complete %&gt;%
-  group_by(group) %&gt;%
-  count() %&gt;%
-  ungroup() %&gt;%
-  dplyr::select(-group) %&gt;%
-  t()
-
-  #df_orig &lt;- select(df_orig, v201, rclass10, EGP6, everything())</code></pre>
-</div>
-<div id="replicate-table-1" class="section level2">
-<h2>Replicate Table 1</h2>
-<pre class="r"><code># get weighted means by group
-Tbl1_rep &lt;- apply(df_orig_complete[,c(&quot;education_1&quot;,&quot;education_2&quot;,&quot;education_3&quot;,&quot;income_1&quot;,&quot;income_2&quot;,&quot;income_3&quot;,&quot;EGP6_1&quot;,&quot;EGP6_2&quot;,&quot;EGP6_3&quot;,&quot;EGP6_4&quot;,&quot;EGP6_5&quot;,&quot;EGP6_6&quot;,&quot;EGP6_7&quot;,&quot;female&quot;)], 2, function(x) {sapply(split(data.frame(df_orig_complete[,&quot;weight&quot;], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
-
-Tbl1_rep &lt;- as.data.frame(t(round(Tbl1_rep*100, 0)))
-
-Tbl1_rep_unw &lt;- apply(df_orig_complete[,c(&quot;education_1&quot;,&quot;education_2&quot;,&quot;education_3&quot;,&quot;income_1&quot;,&quot;income_2&quot;,&quot;income_3&quot;,&quot;EGP6_1&quot;,&quot;EGP6_2&quot;,&quot;EGP6_3&quot;,&quot;EGP6_4&quot;,&quot;EGP6_5&quot;,&quot;EGP6_6&quot;,&quot;EGP6_7&quot;,&quot;female&quot;)], 2, function(x) {sapply(split(data.frame(df_orig_complete[,&quot;weight&quot;], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})
-
-Tbl1_rep_unw &lt;- as.data.frame(t(round(Tbl1_rep_unw*100, 0)))
-
-Tbl1_rep[nrow(Tbl1_rep)+1,] &lt;- cases
-
-Tbl1_rep_unw[nrow(Tbl1_rep_unw)+1,] &lt;- cases
-
-rownames(Tbl1_rep)[15] &lt;- &quot;N&quot;
-rownames(Tbl1_rep_unw)[15] &lt;- &quot;N&quot;
-
-# create csv for easy importing in final report
-write.csv(Tbl1_rep, here::here(&quot;results&quot;, &quot;Tbl1_rep_unw.csv&quot;), row.names = F)
-
-Tbl1_rep_out &lt;- kable_styling(kable(Tbl1_rep, col.names = c(&quot;Wave 1, Age 18-29&quot;,&quot;Wave 1, Age 30-49&quot;,&quot;Wave 1, Age 50-59&quot;,&quot;Wave 1, Age 60+&quot;,&quot;Wave 2, Age 18-29&quot;,&quot;Wave 2, Age 30-49&quot;,&quot;Wave 2, Age 50-59&quot;,&quot;Wave 2, Age 60+&quot;), caption = &quot;Table 1R. Replicated Weighted. Age and socio-demographic outcomes weighted in percentages by age group&quot;))
-save_kable(Tbl1_rep_out, file = &quot;results/Tbl1_rep.htm&quot;)
-
-Tbl1_rep_out_unw &lt;- kable_styling(kable(Tbl1_rep, col.names = c(&quot;Wave 1, Age 18-29&quot;,&quot;Wave 1, Age 30-49&quot;,&quot;Wave 1, Age 50-59&quot;,&quot;Wave 1, Age 60+&quot;,&quot;Wave 2, Age 18-29&quot;,&quot;Wave 2, Age 30-49&quot;,&quot;Wave 2, Age 50-59&quot;,&quot;Wave 2, Age 60+&quot;), caption = &quot;Table 1R. Replicated Unweighted. Age and socio-demographic outcomes weighted in percentages by age group&quot;))
-
-
-#webshot(&quot;results/Tbl1_rep.htm&quot;, file = &quot;results/Tbl1_rep.png&quot;)</code></pre>
-<div id="table-1r-weighted" class="section level3">
-<h3>Table 1R Weighted</h3>
-<pre class="r"><code>Tbl1_rep_out</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 1R. Replicated Weighted. Age and socio-demographic outcomes
-weighted in percentages by age group
-</caption>
-<thead>
+tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, transform = NULL, p.style = &quot;stars&quot;, show.ci = F, show.loglik = T,  pred.labels = c(&quot;k1&quot;,&quot;k2&quot;,&quot;k3&quot;,&quot;k4&quot;,&quot;Age 30-44&quot;,&quot;Age 44-59&quot;,&quot;Age &gt;60&quot;,&quot;Year 2007&quot;,&quot;Age 30-44*year&#39;07&quot;, &quot;Age 44-59*year&#39;07&quot;, &quot;Age &gt;60*year&#39;07&quot;, &quot;Female&quot;, &quot;Educ mid&quot;, &quot;Educ high&quot; ,&quot;EGP: routine non-man&quot;, &quot;EGP: Self&quot;, &quot;EGP: Skilled&quot;, &quot;EGP: Unskilled&quot;, &quot;EGP: Farmers&quot;, &quot;EGP: Never had a job&quot;, &quot;Income mid&quot;, &quot;Income high&quot;,&quot;Income missing&quot;, &quot;Pensions and benefits&quot;,&quot;Unemployed&quot;, &quot;Car&quot;,&quot;bulgaria&quot;, &quot;czech&quot;, &quot;estonia&quot;, &quot;hungary&quot;,&quot;latvia&quot;, &quot;lithuania&quot;, &quot;moldova&quot;,&quot;poland&quot;, &quot;romania&quot;, &quot;russia&quot;,&quot;slovakia&quot;, &quot;ukraine&quot;), file = here::here(&quot;results&quot;, &quot;Tbl5_rep_f.doc&quot;))</code></pre>
+<table style="border-collapse:collapse; border:none;">
 <tr>
-<th style="text-align:left;">
+<th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">
+ 
 </th>
-<th style="text-align:right;">
-Wave 1, Age 18-29
+<th colspan="1" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
+factor(stdliv next 5)
 </th>
-<th style="text-align:right;">
-Wave 1, Age 30-49
+<th colspan="1" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
+factor(stdliv next 5)
 </th>
-<th style="text-align:right;">
-Wave 1, Age 50-59
-</th>
-<th style="text-align:right;">
-Wave 1, Age 60+
-</th>
-<th style="text-align:right;">
-Wave 2, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 2, Age 30-49
-</th>
-<th style="text-align:right;">
-Wave 2, Age 50-59
-</th>
-<th style="text-align:right;">
-Wave 2, Age 60+
+<th colspan="1" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
+factor(stdliv next 5)
 </th>
 </tr>
-</thead>
-<tbody>
 <tr>
-<td style="text-align:left;">
-education_1
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  text-align:left; ">
+Predictors
 </td>
-<td style="text-align:right;">
-29
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
+Log-Odds
 </td>
-<td style="text-align:right;">
-26
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
+Log-Odds
 </td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-72
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
+Log-Odds
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-education_2
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k1
 </td>
-<td style="text-align:right;">
-54
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-2.51 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-48
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-2.45 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:right;">
-15
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-2.21 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-education_3
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k2
 </td>
-<td style="text-align:right;">
-17
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-1.61 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-25
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-1.54 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-13
-</td>
-<td style="text-align:right;">
-50
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-12
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-1.29 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-income_1
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k3
 </td>
-<td style="text-align:right;">
-26
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.59 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-24
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.68 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-56
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-39
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.99 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-income_2
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k4
 </td>
-<td style="text-align:right;">
-34
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+3.18 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-35
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+3.30 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-27
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-45
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+3.64 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-income_3
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 30-44
 </td>
-<td style="text-align:right;">
-39
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.41 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-41
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.46 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-13
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-15
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.46 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_1
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 44-59
 </td>
-<td style="text-align:right;">
-22
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.81 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-31
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.82 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-24
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.82 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_2
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age &gt;60
 </td>
-<td style="text-align:right;">
-15
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.97 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-13
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.82 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-13
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.75 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_3
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Year 2007
 </td>
-<td style="text-align:right;">
-4
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.75 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-3
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.73 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-0
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.75 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_4
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 30-44*year’07
 </td>
-<td style="text-align:right;">
-23
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.00 <sup></sup>
 </td>
-<td style="text-align:right;">
-22
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.02 <sup></sup>
 </td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-55
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-19
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.02 <sup></sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_5
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 44-59*year’07
 </td>
-<td style="text-align:right;">
-18
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.11 <sup></sup>
 </td>
-<td style="text-align:right;">
-20
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.10 <sup></sup>
 </td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-9
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-31
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.11 <sup></sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_6
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age &gt;60*year’07
 </td>
-<td style="text-align:right;">
-8
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.38 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-10
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.40 <sup>***</sup>
 </td>
-<td style="text-align:right;">
-12
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-10
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.39 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-EGP6_7
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-65
-</td>
-<td style="text-align:right;">
-58
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-N
-</td>
-<td style="text-align:right;">
-3827
-</td>
-<td style="text-align:right;">
-7325
-</td>
-<td style="text-align:right;">
-5766
-</td>
-<td style="text-align:right;">
-5226
-</td>
-<td style="text-align:right;">
-2086
-</td>
-<td style="text-align:right;">
-3596
-</td>
-<td style="text-align:right;">
-3876
-</td>
-<td style="text-align:right;">
-3946
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="table-1r-unweighted" class="section level3">
-<h3>Table 1R Unweighted</h3>
-<pre class="r"><code>Tbl1_rep_out_unw</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 1R. Replicated Unweighted. Age and socio-demographic outcomes
-weighted in percentages by age group
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-</th>
-<th style="text-align:right;">
-Wave 1, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 1, Age 30-49
-</th>
-<th style="text-align:right;">
-Wave 1, Age 50-59
-</th>
-<th style="text-align:right;">
-Wave 1, Age 60+
-</th>
-<th style="text-align:right;">
-Wave 2, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 2, Age 30-49
-</th>
-<th style="text-align:right;">
-Wave 2, Age 50-59
-</th>
-<th style="text-align:right;">
-Wave 2, Age 60+
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-education_1
-</td>
-<td style="text-align:right;">
-29
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-72
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-education_2
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-education_3
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-13
-</td>
-<td style="text-align:right;">
-50
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-income_1
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-56
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-39
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-income_2
-</td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-27
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-45
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-income_3
-</td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-41
-</td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-13
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_1
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_2
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-13
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_3
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_4
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-55
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_5
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-9
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-31
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_6
-</td>
-<td style="text-align:right;">
-8
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-12
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_7
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-65
-</td>
-<td style="text-align:right;">
-58
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-N
-</td>
-<td style="text-align:right;">
-3827
-</td>
-<td style="text-align:right;">
-7325
-</td>
-<td style="text-align:right;">
-5766
-</td>
-<td style="text-align:right;">
-5226
-</td>
-<td style="text-align:right;">
-2086
-</td>
-<td style="text-align:right;">
-3596
-</td>
-<td style="text-align:right;">
-3876
-</td>
-<td style="text-align:right;">
-3946
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div id="table-1-original" class="section level2">
-<h2>Table 1 Original</h2>
-<pre class="r"><code>Tbl1_orig &lt;- Tbl1_orig[-c(1:3),]
-colnames(Tbl1_orig) &lt;- c(&quot;Variable&quot;,&quot;y93-96 a18-29&quot;,&quot;y93-96 a30-44&quot;,&quot;y93-96 a 45-59&quot;,&quot;y93-96 a60+&quot;,&quot;y07 18-29&quot;,&quot;y07 30-44&quot;,&quot;y07 45-59&quot;,&quot;y07 60+&quot;)
-
-Tbl1_orig[,2:9] &lt;- lapply(Tbl1_orig[,2:9], function (x) ifelse(is.na(x), &quot;&quot;, x))
-
-Tbl2_orig &lt;- Tbl2_orig[-c(1:2),]
-
-colnames(Tbl2_orig) &lt;- c(&quot;Variable&quot;,&quot;y93-96 a18-29&quot;,&quot;y93-96 a30-44&quot;,&quot;y93-96 a 45-59&quot;,&quot;y93-96 a60+&quot;,&quot;y07 18-29&quot;,&quot;y07 30-44&quot;,&quot;y07 45-59&quot;,&quot;y07 60+&quot;)
-
-Tbl2_orig[,2:9] &lt;- lapply(Tbl2_orig[,2:9], function (x) ifelse(is.na(x), &quot;&quot;, x))
-
-Tbl1_orig$Variable &lt;- c(NA, &quot;Education_1_Low&quot;, &quot;Education_2_Mid&quot;, &quot;Education_3_Hi&quot;, NA, &quot;Income_1_Low&quot;, &quot;Income_2_Mid&quot;, &quot;Income_3_Hi&quot;, NA, &quot;EGP6_1_Service&quot;, &quot;EGP6_2_Rtn_NonMan&quot;, &quot;EGP6_3_SelfEmp&quot;, &quot;EGP6_4_SkilMan&quot;, &quot;EGP6_5_Unskilled&quot;, &quot;EGP6_6_Farmers&quot;, &quot;EGP6_7_NeverHadJob&quot;, &quot;Female&quot;, &quot;N&quot;)
-
-Tbl1_orig &lt;- subset(Tbl1_orig, !is.na(Variable))
-
-kable_styling(kable(Tbl1_orig, caption = &quot;Table 1O. Original. Age and socio-demographic outcomes weighted in percentages by age group&quot;))</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 1O. Original. Age and socio-demographic outcomes weighted in
-percentages by age group
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-Variable
-</th>
-<th style="text-align:left;">
-y93-96 a18-29
-</th>
-<th style="text-align:left;">
-y93-96 a30-44
-</th>
-<th style="text-align:left;">
-y93-96 a 45-59
-</th>
-<th style="text-align:left;">
-y93-96 a60+
-</th>
-<th style="text-align:left;">
-y07 18-29
-</th>
-<th style="text-align:left;">
-y07 30-44
-</th>
-<th style="text-align:left;">
-y07 45-59
-</th>
-<th style="text-align:left;">
-y07 60+
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Education_1_Low
-</td>
-<td style="text-align:left;">
-13
-</td>
-<td style="text-align:left;">
-14
-</td>
-<td style="text-align:left;">
-29
-</td>
-<td style="text-align:left;">
-56
-</td>
-<td style="text-align:left;">
-11
-</td>
-<td style="text-align:left;">
-9
-</td>
-<td style="text-align:left;">
-13
-</td>
-<td style="text-align:left;">
-40
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Education_2_Mid
-</td>
-<td style="text-align:left;">
-75
-</td>
-<td style="text-align:left;">
-66
-</td>
-<td style="text-align:left;">
-51
-</td>
-<td style="text-align:left;">
-31
-</td>
-<td style="text-align:left;">
-66
-</td>
-<td style="text-align:left;">
-69
-</td>
-<td style="text-align:left;">
-67
-</td>
-<td style="text-align:left;">
-45
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Education_3_Hi
-</td>
-<td style="text-align:left;">
-13
-</td>
-<td style="text-align:left;">
-21
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-13
-</td>
-<td style="text-align:left;">
-23
-</td>
-<td style="text-align:left;">
-22
-</td>
-<td style="text-align:left;">
-19
-</td>
-<td style="text-align:left;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Income_1_Low
-</td>
-<td style="text-align:left;">
-18
-</td>
-<td style="text-align:left;">
-16
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-42
-</td>
-<td style="text-align:left;">
-19
-</td>
-<td style="text-align:left;">
-14
-</td>
-<td style="text-align:left;">
-21
-</td>
-<td style="text-align:left;">
-32
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Income_2_Mid
-</td>
-<td style="text-align:left;">
-53
-</td>
-<td style="text-align:left;">
-54
-</td>
-<td style="text-align:left;">
-52
-</td>
-<td style="text-align:left;">
-49
-</td>
-<td style="text-align:left;">
-44
-</td>
-<td style="text-align:left;">
-47
-</td>
-<td style="text-align:left;">
-50
-</td>
-<td style="text-align:left;">
-59
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Income_3_Hi
-</td>
-<td style="text-align:left;">
-29
-</td>
-<td style="text-align:left;">
-31
-</td>
-<td style="text-align:left;">
-28
-</td>
-<td style="text-align:left;">
-9
-</td>
-<td style="text-align:left;">
-37
-</td>
-<td style="text-align:left;">
-39
-</td>
-<td style="text-align:left;">
-29
-</td>
-<td style="text-align:left;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_1_Service
-</td>
-<td style="text-align:left;">
-21
-</td>
-<td style="text-align:left;">
-30
-</td>
-<td style="text-align:left;">
-32
-</td>
-<td style="text-align:left;">
-23
-</td>
-<td style="text-align:left;">
-30
-</td>
-<td style="text-align:left;">
-32
-</td>
-<td style="text-align:left;">
-29
-</td>
-<td style="text-align:left;">
-27
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_2_Rtn_NonMan
-</td>
-<td style="text-align:left;">
-16
-</td>
-<td style="text-align:left;">
-14
-</td>
-<td style="text-align:left;">
-11
-</td>
-<td style="text-align:left;">
-10
-</td>
-<td style="text-align:left;">
-18
-</td>
-<td style="text-align:left;">
-17
-</td>
-<td style="text-align:left;">
-14
-</td>
-<td style="text-align:left;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_3_SelfEmp
-</td>
-<td style="text-align:left;">
-6
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_4_SkilMan
-</td>
-<td style="text-align:left;">
-21
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-17
-</td>
-<td style="text-align:left;">
-14
-</td>
-<td style="text-align:left;">
-17
-</td>
-<td style="text-align:left;">
-18
-</td>
-<td style="text-align:left;">
-16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_5_Unskilled
-</td>
-<td style="text-align:left;">
-19
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-21
-</td>
-<td style="text-align:left;">
-18
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-24
-</td>
-<td style="text-align:left;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_6_Farmers
-</td>
-<td style="text-align:left;">
-9
-</td>
-<td style="text-align:left;">
-10
-</td>
-<td style="text-align:left;">
-13
-</td>
-<td style="text-align:left;">
-23
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-8
-</td>
-<td style="text-align:left;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-EGP6_7_NeverHadJob
-</td>
-<td style="text-align:left;">
-9
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:left;">
-14
-</td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
 Female
 </td>
-<td style="text-align:left;">
-51
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
 </td>
-<td style="text-align:left;">
-52
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.15 <sup>***</sup>
 </td>
-<td style="text-align:left;">
-53
-</td>
-<td style="text-align:left;">
-55
-</td>
-<td style="text-align:left;">
-54
-</td>
-<td style="text-align:left;">
-56
-</td>
-<td style="text-align:left;">
-57
-</td>
-<td style="text-align:left;">
-59
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.10 <sup>***</sup>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-N
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Educ mid
 </td>
-<td style="text-align:left;">
-3800
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
 </td>
-<td style="text-align:left;">
-6897
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.08 <sup>**</sup>
 </td>
-<td style="text-align:left;">
-5542
-</td>
-<td style="text-align:left;">
-5019
-</td>
-<td style="text-align:left;">
-2107
-</td>
-<td style="text-align:left;">
-3667
-</td>
-<td style="text-align:left;">
-3945
-</td>
-<td style="text-align:left;">
-4045
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.02 <sup></sup>
 </td>
 </tr>
-</tbody>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Educ high
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.21 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.17 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: routine non-man
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.08 <sup>*</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.06 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Self
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.22 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.26 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Skilled
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.16 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.14 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Unskilled
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.17 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.13 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Farmers
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.18 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.14 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Never had a job
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.32 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.19 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Income mid
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.14 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.11 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Income high
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.41 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.36 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Income missing
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.21 <sup>*</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.18 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Pensions and benefits
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.09 <sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Unemployed
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.20 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Car
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.27 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+bulgaria
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.02 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+czech
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.33 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+estonia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.66 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+hungary
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.24 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+latvia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.72 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+lithuania
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.58 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+moldova
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.27 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+poland
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.27 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+romania
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.40 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+russia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.15 <sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+slovakia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.00 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+ukraine
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.12 <sup>*</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">
+Observations
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="1">
+35648
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="1">
+35648
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="1">
+35648
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
+R<sup>2</sup> Nagelkerke
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+0.068
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+0.086
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+0.120
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
+log-Likelihood
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+-45584.674
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+-45258.680
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+-44644.165
+</td>
+</tr>
+<tr>
+<td colspan="4" style="font-style:italic; border-top:double black; text-align:right;">
+<ul>
+<li>p&lt;0.05   ** p&lt;0.01   *** p&lt;0.001
+</td>
+</tr></li>
+</ul>
 </table>
-<p>The results do not match very well, especially in the education
-category. Actually it appears that only 2007 has weights. Running Table
-1 without weights changes very little. Therefore, a proper test requires
-hand coding by country; however, the country-specific education codes in
-the codebook for v198 are incorrect, e.g., I tested Bulgaria and Belarus
-1993. Belarus looks ok except two missing codes are not present, but
-Bulgaria has several extra codes than what is listed in the codebook
-provided (values 8-12). Therefore, this hand coding is not possible.
-Russia has different codes altogether, therefore I had to guess how to
-code it under the assumption the variable was similarly ordinal.</p>
-</div>
-<div id="education-peculiarities" class="section level2">
-<h2>Education Peculiarities</h2>
-<div id="isced-in-all-countries-except-russia" class="section level3">
-<h3>ISCED in all countries except Russia</h3>
-<pre class="r"><code>unique(df_orig$std_education[df_orig$cntry != &quot;russia&quot;])</code></pre>
-<pre><code>## [1]  5  6  3  4  1  0  2 NA 99</code></pre>
-</div>
-<div id="russia-not-in-isced" class="section level3">
-<h3>Russia not in ISCED</h3>
-<p>Extra categories not in ISCED-97 or in other countries</p>
-<pre class="r"><code>unique(df_orig$std_education[df_orig$cntry == &quot;russia&quot;])</code></pre>
-<pre><code>##  [1]  3  4  2  1 NA  5  0  9 10  7  8  6 11 12 96 95</code></pre>
-</div>
-<div id="check-original-education-variable" class="section level3">
-<h3>Check original education variable</h3>
-<div id="russia" class="section level4">
-<h4>Russia</h4>
-<p>Not coded following original codebook (see “data” folder). At least
-one category is present in data (“14”) that is not in codebook</p>
-<p>RUSSIA 1993 V198 highest education level 1 primary school 2 secondary
-school 3 high school 4 professional courses 5 vocational school 6
-technical secondary school 7 vocational post-school 8 technical college
-9 incomplete high education(institute,university,academy) 10 high
-education(institute,university,academy) 11 additional training courses
-12 degree 95 no educational qualifications 96 never went to school 98
-don’t know</p>
-<pre class="r"><code>unique(df_orig$v198[df_orig$cntry == &quot;russia&quot;])</code></pre>
-<pre><code>##  [1]  3 10  7  6  2  9  8  5  1  4 11 NA 12 96 95 99 14</code></pre>
-</div>
-<div id="belarus" class="section level4">
-<h4>Belarus</h4>
-<p>BELARUS 1993 V198 education 1 elementary school 2 junior high school
-3 high school 4 professional training courses 5 regular
-factory-and-workshop school,industrial training scho 6 industrial
-training high school 7 college (for nurses, elementary school teachers,
-musicians) 8 technical college 9 bachelor’s degree 10 master’s degree
-(university, academy etc) 11 postgraduate courses 12 Ph. Degree 95 no
-certificates of education of any kind 96 never went to school 98 don’t
-know</p>
-<pre class="r"><code>unique(df_orig$v198[df_orig$cntry == &quot;belarus&quot;])</code></pre>
-<pre><code>##  [1]  8 10  3  6  7  4 11  9  5  1 95  2 NA 12</code></pre>
-</div>
-<div id="bulgaria" class="section level4">
-<h4>Bulgaria</h4>
-<p>BULGARIA 1993 V198 education 1 NO COMPLETED ED. 2 ELEMENTARY 3
-PRIMARY 4 HIGH SCHOOL 5 SECONDARY VOCATIONAL 6 COLLEGE 7 HIGHER 98 DON T
-KNOW</p>
-<pre class="r"><code>unique(df_orig$v198[df_orig$cntry == &quot;belarus&quot;])</code></pre>
-<pre><code>##  [1]  8 10  3  6  7  4 11  9  5  1 95  2 NA 12</code></pre>
-</div>
-</div>
-</div>
-<div id="table-2-replicated" class="section level2">
-<h2>Table 2 Replicated</h2>
-<pre class="r"><code># get weighted means by group
-Tbl2_rep &lt;- apply(df_orig_complete[,c(&quot;pensions&quot;,&quot;unemployed&quot;,&quot;car_owner&quot;)], 2, function(x) {sapply(split(data.frame(df_orig_complete[,&quot;weight&quot;], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
+<pre class="r"><code>tab_model(Tbl5_m1, Tbl5_m2, Tbl5_m3, transform = NULL, p.style = &quot;stars&quot;, show.ci = F, show.loglik = T,  pred.labels = c(&quot;k1&quot;,&quot;k2&quot;,&quot;k3&quot;,&quot;k4&quot;,&quot;Age 30-44&quot;,&quot;Age 44-59&quot;,&quot;Age &gt;60&quot;,&quot;Year 2007&quot;,&quot;Age 30-44*year&#39;07&quot;, &quot;Age 44-59*year&#39;07&quot;, &quot;Age &gt;60*year&#39;07&quot;, &quot;Female&quot;, &quot;Educ mid&quot;, &quot;Educ high&quot; ,&quot;EGP: routine non-man&quot;, &quot;EGP: Self&quot;, &quot;EGP: Skilled&quot;, &quot;EGP: Unskilled&quot;, &quot;EGP: Farmers&quot;, &quot;EGP: Never had a job&quot;, &quot;Income mid&quot;, &quot;Income high&quot;,&quot;Income missing&quot;, &quot;Pensions and benefits&quot;,&quot;Unemployed&quot;, &quot;Car&quot;,&quot;bulgaria&quot;, &quot;czech&quot;, &quot;estonia&quot;, &quot;hungary&quot;,&quot;latvia&quot;, &quot;lithuania&quot;, &quot;moldova&quot;,&quot;poland&quot;, &quot;romania&quot;, &quot;russia&quot;,&quot;slovakia&quot;, &quot;ukraine&quot;), file = here::here(&quot;results&quot;, &quot;Tbl5_rep_f.htm&quot;))</code></pre>
+<table style="border-collapse:collapse; border:none;">
+<tr>
+<th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">
+ 
+</th>
+<th colspan="1" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
+factor(stdliv next 5)
+</th>
+<th colspan="1" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
+factor(stdliv next 5)
+</th>
+<th colspan="1" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
+factor(stdliv next 5)
+</th>
+</tr>
+<tr>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  text-align:left; ">
+Predictors
+</td>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
+Log-Odds
+</td>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
+Log-Odds
+</td>
+<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
+Log-Odds
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k1
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-2.51 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-2.45 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-2.21 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k2
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-1.61 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-1.54 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-1.29 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k3
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.59 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.68 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.99 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+k4
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+3.18 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+3.30 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+3.64 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 30-44
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.41 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.46 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.46 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 44-59
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.81 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.82 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.82 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age &gt;60
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.97 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.82 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.75 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Year 2007
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.75 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.73 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.75 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 30-44*year’07
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.00 <sup></sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.02 <sup></sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.02 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age 44-59*year’07
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.11 <sup></sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.10 <sup></sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.11 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Age &gt;60*year’07
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.38 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.40 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.39 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Female
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.15 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.10 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Educ mid
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.08 <sup>**</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.02 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Educ high
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.21 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.17 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: routine non-man
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.08 <sup>*</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.06 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Self
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.22 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.26 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Skilled
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.16 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.14 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Unskilled
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.17 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.13 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Farmers
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.18 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.14 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+EGP: Never had a job
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.32 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.19 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Income mid
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.14 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.11 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Income high
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.41 <sup>***</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.36 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Income missing
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.21 <sup>*</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.18 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Pensions and benefits
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.09 <sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Unemployed
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.20 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+Car
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.27 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+bulgaria
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.02 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+czech
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.33 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+estonia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.66 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+hungary
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.24 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+latvia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.72 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+lithuania
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.58 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+moldova
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.27 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+poland
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.27 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+romania
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.40 <sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+russia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.15 <sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+slovakia
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+0.00 <sup></sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
+ukraine
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
+-0.12 <sup>*</sup>
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">
+Observations
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="1">
+35648
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="1">
+35648
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="1">
+35648
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
+R<sup>2</sup> Nagelkerke
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+0.068
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+0.086
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+0.120
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
+log-Likelihood
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+-45584.674
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+-45258.680
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="1">
+-44644.165
+</td>
+</tr>
+<tr>
+<td colspan="4" style="font-style:italic; border-top:double black; text-align:right;">
+<ul>
+<li>p&lt;0.05   ** p&lt;0.01   *** p&lt;0.001
+</td>
+</tr></li>
+</ul>
+</table>
+<pre class="r"><code>#knitr::include_graphics(here::here(&quot;results&quot;, &quot;Tbl5_rep_f.htm&quot;))
 
-Tbl2_rep &lt;- as.data.frame(t(round(Tbl2_rep, 3)))
+#webshot(here::here(&quot;results&quot;, &quot;Tbl5_rep_f.htm&quot;), file = here::here(&quot;results&quot;, &quot;Tbl5_rep_f.png&quot;))
 
-Tbl2_rep[nrow(Tbl2_rep)+1,] &lt;- cases
+#knitr::include_graphics(here::here(&quot;results&quot;, &quot;Tbl5_rep_f.png&quot;))</code></pre>
+<div id="marginal-estimates" class="section level2">
+<h2>Marginal Estimates</h2>
+<p>The coefficients in the table are different from the original
+results, but they are also different from the Stata results (see
+03_Main_Analysis_Stata.do). Clearly the ordred probit models use
+slightly different estimation techniques. But, the quesiton is: are the
+predicted values the same?</p>
+<div id="calculate-margins" class="section level3">
+<h3>Calculate Margins</h3>
+<pre class="r"><code>newdat &lt;- data.frame(
+  cat_age = rep(1:4, 2),
+  wave = c(rep(1993, 4), rep(2007, 4)),
+  female = rep(0, 8),
+  education = rep(1,8),
+  EGP6 = rep(1,8),
+  income = rep(1,8),
+  pensions = rep(mean(df_orig_complete$pensions, na.rm = T),8),
+  unemployed = rep(mean(df_orig_complete$unemployed, na.rm = T),8), 
+  car_owner = rep(mean(df_orig_complete$car_owner, na.rm = T),8),
+  cntry = &quot;belarus&quot;) # ref cat
 
-rownames(Tbl2_rep)[4] &lt;- &quot;N&quot;
+newdat &lt;- cbind(newdat, predict(Tbl5_m3, newdat, type = &quot;probs&quot;))</code></pre>
+</div>
+<div id="import-stata-results" class="section level3">
+<h3>Import Stata Results</h3>
+<pre class="r"><code>Tbl5_m3_Stata &lt;- read_csv(here::here(&quot;results&quot;,&quot;Tbl5_m3.csv&quot;))</code></pre>
+<pre><code>## Rows: 40 Columns: 5
+## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;,&quot;
+## dbl (5): outcome, age_cat, wave, margin, se
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div id="combine-into-margins-comparison-table" class="section level3">
+<h3>Combine into Margins Comparison Table</h3>
+<pre class="r"><code>Tbl5_marg_comp &lt;- newdat %&gt;%
+  dplyr::select(wave, cat_age, `1`, `2`, `3`, `4`, `5`)
 
-# create csv for easy importing in final report
-write.csv(Tbl2_rep, here::here(&quot;results&quot;, &quot;Tbl2_rep.csv&quot;), row.names = F)
+colnames(Tbl5_marg_comp) &lt;- c(&quot;wave&quot;, &quot;age_cat&quot;, &quot;fall_alot&quot;, &quot;fall&quot;, &quot;stay_same&quot;, &quot;rise&quot;, &quot;rise_alot&quot;)
 
-Tbl2_rep[1,] &lt;- round(as.numeric(Tbl2_rep[1,])*100,0)
-Tbl2_rep[2,] &lt;- round(as.numeric(Tbl2_rep[2,])*100,0)
-Tbl2_rep[3,] &lt;- round(as.numeric(Tbl2_rep[3,])*100,0)
-Tbl2_rep[4,] &lt;- round(as.numeric(Tbl2_rep[4,]),0)
+# add Stata results
+Tbl5_marg_comp[9:16,] &lt;- NA
+Tbl5_marg_comp$Software &lt;- c(rep(&quot;R polr&quot;,8), rep(&quot;Stata oprobit&quot;, 8))
+Tbl5_marg_comp[9:16,1:2] &lt;- Tbl5_marg_comp[1:8,1:2]
 
-kable_styling(kable(Tbl2_rep, caption = &quot;Table 2R. Replicated. Age-based inequality in resources in percentage&quot;, col.names = c(&quot;Wave 1, Age 18-29&quot;, &quot;Wave 1, Age 30-44&quot;, &quot;Wave 1, Age 45-59&quot;, &quot;Wave 1, 60+&quot;, &quot;Wave 2, Age 18-29&quot;, &quot;Wave 2, Age 30-44&quot;, &quot;Wave 2, Age 45-59&quot;, &quot;Wave 2, 60+&quot;)))</code></pre>
+#sort Stata data
+Tbl5_m3_Stata &lt;- Tbl5_m3_Stata[order( Tbl5_m3_Stata[,&quot;outcome&quot;], Tbl5_m3_Stata[,&quot;wave&quot;] ),]
+
+Tbl5_marg_comp$fall_alot[9:16] &lt;- Tbl5_m3_Stata$margin[1:8]
+Tbl5_marg_comp$fall[9:16] &lt;- Tbl5_m3_Stata$margin[9:16]
+Tbl5_marg_comp$stay_same[9:16] &lt;- Tbl5_m3_Stata$margin[17:24]
+Tbl5_marg_comp$rise[9:16] &lt;- Tbl5_m3_Stata$margin[25:32]
+Tbl5_marg_comp$rise_alot[9:16] &lt;- Tbl5_m3_Stata$margin[33:40]</code></pre>
+</div>
+<div id="comparison" class="section level3">
+<h3>Comparison</h3>
+<pre class="r"><code>Tbl5_marg_comp %&gt;%
+  subset(age_cat == 1 | age_cat == 4) %&gt;%
+  ggplot(aes(y = (fall_alot+fall), x = wave, color = interaction(Software,age_cat))) +
+  geom_point() +
+  geom_line() +
+  labs(y = &quot;Predicted Likelihood of Percieved Standard\nof Living Falling in the Next 5 Years&quot;, x = &quot;Survey Wave&quot;) +
+  scale_color_manual(name = &quot;Age group &amp;\nSoftware used&quot;, 
+                       values = c(&quot;#481567FF&quot;, 
+                                  &quot;#238A8DFF&quot;, 
+                                  &quot;#453781FF&quot;, 
+                                  &quot;#29AF7FFF&quot;), 
+                       labels = c(&quot;Age 19-29\nusing R polr&quot;, &quot;Age 19-29\nusing Stata oprobit&quot;, &quot;Age 60+\nusing R polr&quot;, &quot;Age 60+\nusing Stata oprobit&quot;)) +
+  scale_x_discrete(limits = c(1993,2007)) +
+  theme_classic()</code></pre>
+<pre><code>## Warning: Continuous limits supplied to discrete scale.
+## Did you mean `limits = factor(...)` or `scale_*_continuous()`?</code></pre>
+<p><img src="data:image/png;base64,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" width="672" /></p>
+</div>
+</div>
+<div id="table-comparing-stata-and-r-margins" class="section level2">
+<h2>Table Comparing Stata and R Margins</h2>
+<pre class="r"><code>kable_styling(kable(Tbl5_marg_comp))</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 2R. Replicated. Age-based inequality in resources in percentage
-</caption>
 <thead>
 <tr>
+<th style="text-align:right;">
+wave
+</th>
+<th style="text-align:right;">
+age_cat
+</th>
+<th style="text-align:right;">
+fall_alot
+</th>
+<th style="text-align:right;">
+fall
+</th>
+<th style="text-align:right;">
+stay_same
+</th>
+<th style="text-align:right;">
+rise
+</th>
+<th style="text-align:right;">
+rise_alot
+</th>
 <th style="text-align:left;">
-</th>
-<th style="text-align:right;">
-Wave 1, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 1, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 1, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 1, 60+
-</th>
-<th style="text-align:right;">
-Wave 2, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 2, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 2, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 2, 60+
+Software
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-pensions
-</td>
 <td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-86
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-94
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unemployed
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-9
-</td>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-8
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-10
+1993
 </td>
 <td style="text-align:right;">
 1
 </td>
-</tr>
-<tr>
+<td style="text-align:right;">
+0.0927751
+</td>
+<td style="text-align:right;">
+0.1120754
+</td>
+<td style="text-align:right;">
+0.5111955
+</td>
+<td style="text-align:right;">
+0.2567204
+</td>
+<td style="text-align:right;">
+0.0272337
+</td>
 <td style="text-align:left;">
-car_owner
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-44
-</td>
-<td style="text-align:right;">
-40
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-53
-</td>
-<td style="text-align:right;">
-62
-</td>
-<td style="text-align:right;">
-28
+R polr
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-N
+<td style="text-align:right;">
+1993
 </td>
 <td style="text-align:right;">
-3827
-</td>
-<td style="text-align:right;">
-7325
-</td>
-<td style="text-align:right;">
-5766
-</td>
-<td style="text-align:right;">
-5226
-</td>
-<td style="text-align:right;">
-2086
-</td>
-<td style="text-align:right;">
-3596
-</td>
-<td style="text-align:right;">
-3876
-</td>
-<td style="text-align:right;">
-3946
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="table-2.-original" class="section level2">
-<h2>Table 2. Original</h2>
-<pre class="r"><code>kable_styling(kable(Tbl2_orig, caption = &quot;Table 2O. Original. Age-based inequality in resources in percentage&quot;))</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 2O. Original. Age-based inequality in resources in percentage
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-Variable
-</th>
-<th style="text-align:left;">
-y93-96 a18-29
-</th>
-<th style="text-align:left;">
-y93-96 a30-44
-</th>
-<th style="text-align:left;">
-y93-96 a 45-59
-</th>
-<th style="text-align:left;">
-y93-96 a60+
-</th>
-<th style="text-align:left;">
-y07 18-29
-</th>
-<th style="text-align:left;">
-y07 30-44
-</th>
-<th style="text-align:left;">
-y07 45-59
-</th>
-<th style="text-align:left;">
-y07 60+
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Pensions and benefits
-</td>
-<td style="text-align:left;">
 2
 </td>
+<td style="text-align:right;">
+0.1396044
+</td>
+<td style="text-align:right;">
+0.1505535
+</td>
+<td style="text-align:right;">
+0.5098853
+</td>
+<td style="text-align:right;">
+0.1826181
+</td>
+<td style="text-align:right;">
+0.0173387
+</td>
 <td style="text-align:left;">
+R polr
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1993
+</td>
+<td style="text-align:right;">
 3
 </td>
-<td style="text-align:left;">
-22
+<td style="text-align:right;">
+0.1888147
+</td>
+<td style="text-align:right;">
+0.1808238
+</td>
+<td style="text-align:right;">
+0.4819878
+</td>
+<td style="text-align:right;">
+0.1362233
+</td>
+<td style="text-align:right;">
+0.0121504
 </td>
 <td style="text-align:left;">
-86
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-6
-</td>
-<td style="text-align:left;">
-21
-</td>
-<td style="text-align:left;">
-88
+R polr
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-Unemployed
-</td>
-<td style="text-align:left;">
-12
-</td>
-<td style="text-align:left;">
-10
-</td>
-<td style="text-align:left;">
-6
-</td>
-<td style="text-align:left;">
-0.4
-</td>
-<td style="text-align:left;">
-8
-</td>
-<td style="text-align:left;">
-7
-</td>
-<td style="text-align:left;">
-8
-</td>
-<td style="text-align:left;">
-0.7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Car-ownership
-</td>
-<td style="text-align:left;">
-43
-</td>
-<td style="text-align:left;">
-47
-</td>
-<td style="text-align:left;">
-43
-</td>
-<td style="text-align:left;">
-24
-</td>
-<td style="text-align:left;">
-58
-</td>
-<td style="text-align:left;">
-61
-</td>
-<td style="text-align:left;">
-53
-</td>
-<td style="text-align:left;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-N
-</td>
-<td style="text-align:left;">
-3800
-</td>
-<td style="text-align:left;">
-6897
-</td>
-<td style="text-align:left;">
-5542
-</td>
-<td style="text-align:left;">
-5019
-</td>
-<td style="text-align:left;">
-2107
-</td>
-<td style="text-align:left;">
-3667
-</td>
-<td style="text-align:left;">
-3945
-</td>
-<td style="text-align:left;">
-4045
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="table-3r.-replicated-weights." class="section level2">
-<h2>Table 3R. Replicated Weights.</h2>
-<pre class="r"><code>Tbl3_rep &lt;- apply(df_orig_complete[,c(&quot;stdliv_past5_di_1&quot;,&quot;stdliv_past5_di_2&quot;,&quot;stdliv_next5_di_1&quot;,&quot;stdliv_next5_di_2&quot;,&quot;noway_future_improve&quot;,&quot;mkt_econ_eval_di_1&quot;,&quot;mkt_econ_eval_di_2&quot;)], 2, function(x) {sapply(split(data.frame(df_orig_complete[,&quot;weight&quot;], x), df_orig_complete$group), function(y) weighted.mean(y[,2], w = y$weight))})
-
-Tbl3_rep &lt;- as.data.frame(t(round(Tbl3_rep, 3)))
-
-Tbl3_rep[nrow(Tbl3_rep)+1,] &lt;- cases
-
-rownames(Tbl3_rep)[8] &lt;- &quot;N&quot;
-
-Tbl3_rep[1,] &lt;- round(as.numeric(Tbl3_rep[1,])*100,0)
-Tbl3_rep[2,] &lt;- round(as.numeric(Tbl3_rep[2,])*100,0)
-Tbl3_rep[3,] &lt;- round(as.numeric(Tbl3_rep[3,])*100,0)
-Tbl3_rep[4,] &lt;- round(as.numeric(Tbl3_rep[4,])*100,0)
-Tbl3_rep[5,] &lt;- round(as.numeric(Tbl3_rep[5,])*100,0)
-Tbl3_rep[6,] &lt;- round(as.numeric(Tbl3_rep[6,])*100,0)
-Tbl3_rep[7,] &lt;- round(as.numeric(Tbl3_rep[7,])*100,0)
-Tbl3_rep[8,] &lt;- round(as.numeric(Tbl3_rep[8,]),0)
-
-kable_styling(kable(Tbl3_rep, caption = &quot;Table 3R. Replicated Weights. Age-based inequality in economic experience in percentages&quot;, col.names = c(&quot;Wave 1, Age 18-29&quot;, &quot;Wave 1, Age 30-44&quot;, &quot;Wave 1, Age 45-59&quot;, &quot;Wave 1, 60+&quot;, &quot;Wave 2, Age 18-29&quot;, &quot;Wave 2, Age 30-44&quot;, &quot;Wave 2, Age 45-59&quot;, &quot;Wave 2, 60+&quot;)))</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 3R. Replicated Weights. Age-based inequality in economic
-experience in percentages
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-</th>
-<th style="text-align:right;">
-Wave 1, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 1, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 1, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 1, 60+
-</th>
-<th style="text-align:right;">
-Wave 2, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 2, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 2, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 2, 60+
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-stdliv_past5_di_1
-</td>
 <td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-75
-</td>
-<td style="text-align:right;">
-81
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-43
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-58
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_past5_di_2
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-9
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-68
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_next5_di_1
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-33
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-29
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-38
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_next5_di_2
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-29
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-71
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-noway_future_improve
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-74
-</td>
-<td style="text-align:right;">
-12
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-29
-</td>
-<td style="text-align:right;">
-81
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mkt_econ_eval_di_1
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-65
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-23
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mkt_econ_eval_di_2
-</td>
-<td style="text-align:right;">
-47
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-55
-</td>
-<td style="text-align:right;">
-51
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-N
-</td>
-<td style="text-align:right;">
-3827
-</td>
-<td style="text-align:right;">
-7325
-</td>
-<td style="text-align:right;">
-5766
-</td>
-<td style="text-align:right;">
-5226
-</td>
-<td style="text-align:right;">
-2086
-</td>
-<td style="text-align:right;">
-3596
-</td>
-<td style="text-align:right;">
-3876
-</td>
-<td style="text-align:right;">
-3946
-</td>
-</tr>
-</tbody>
-</table>
-<p>Here I can reproduce Table 3 almost exactly, but only when I
-<strong>do not use weights</strong>, therefore, it is unclear what it
-means in the text when they claim that the descriptives are
-weighted.</p>
-<pre class="r"><code>Tbl3_rep_n &lt;- apply(df_orig_complete[,c(&quot;stdliv_past5_di_1&quot;,&quot;stdliv_past5_di_2&quot;,&quot;stdliv_next5_di_1&quot;,&quot;stdliv_next5_di_2&quot;,&quot;noway_future_improve&quot;,&quot;mkt_econ_eval_di_1&quot;,&quot;mkt_econ_eval_di_2&quot;)], 2, function(x) {sapply(split(data.frame(df_orig_complete[,&quot;weight&quot;], x), df_orig_complete$group), function(y) mean(y[,2], w = y$weight))})
-
-Tbl3_rep_n &lt;- as.data.frame(t(round(Tbl3_rep_n, 3)))
-
-Tbl3_rep_n[nrow(Tbl3_rep_n)+1,] &lt;- cases
-
-rownames(Tbl3_rep_n)[7] &lt;- &quot;N&quot;
-
-Tbl3_rep_n[1,] &lt;- round(as.numeric(Tbl3_rep_n[1,])*100,0)
-Tbl3_rep_n[2,] &lt;- round(as.numeric(Tbl3_rep_n[2,])*100,0)
-Tbl3_rep_n[3,] &lt;- round(as.numeric(Tbl3_rep_n[3,])*100,0)
-Tbl3_rep_n[4,] &lt;- round(as.numeric(Tbl3_rep_n[4,])*100,0)
-Tbl3_rep_n[5,] &lt;- round(as.numeric(Tbl3_rep_n[5,])*100,0)
-Tbl3_rep_n[6,] &lt;- round(as.numeric(Tbl3_rep_n[6,])*100,0)
-Tbl3_rep_n[7,] &lt;- round(as.numeric(Tbl3_rep_n[7,])*100,0)
-Tbl3_rep_n[8,] &lt;- round(as.numeric(Tbl3_rep_n[8,]),0)
-
-# create csv for easy importing in final report
-write.csv(Tbl3_rep_n, here::here(&quot;results&quot;, &quot;Tbl3_rep_n.csv&quot;), row.names = F)
-
-kable_styling(kable(Tbl3_rep_n, caption = &quot;Table 3R. Replicated No Weights. Age-based inequality in economic experience in percentages&quot;, col.names = c(&quot;Wave 1, Age 18-29&quot;, &quot;Wave 1, Age 30-44&quot;, &quot;Wave 1, Age 45-59&quot;, &quot;Wave 1, 60+&quot;, &quot;Wave 2, Age 18-29&quot;, &quot;Wave 2, Age 30-44&quot;, &quot;Wave 2, Age 45-59&quot;, &quot;Wave 2, 60+&quot;)))</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 3R. Replicated No Weights. Age-based inequality in economic
-experience in percentages
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-</th>
-<th style="text-align:right;">
-Wave 1, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 1, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 1, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 1, 60+
-</th>
-<th style="text-align:right;">
-Wave 2, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 2, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 2, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 2, 60+
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-stdliv_past5_di_1
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-75
-</td>
-<td style="text-align:right;">
-81
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-39
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_past5_di_2
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-9
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-20
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_next5_di_1
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-33
-</td>
-<td style="text-align:right;">
-32
-</td>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_next5_di_2
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-29
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-43
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-noway_future_improve
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-74
+1993
 </td>
 <td style="text-align:right;">
 4
 </td>
 <td style="text-align:right;">
-8
+0.1784101
 </td>
 <td style="text-align:right;">
-24
+0.1752032
 </td>
 <td style="text-align:right;">
-67
+0.4890246
+</td>
+<td style="text-align:right;">
+0.1443496
+</td>
+<td style="text-align:right;">
+0.0130125
+</td>
+<td style="text-align:left;">
+R polr
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.0460742
+</td>
+<td style="text-align:right;">
+0.0624050
+</td>
+<td style="text-align:right;">
+0.4351127
+</td>
+<td style="text-align:right;">
+0.4004501
+</td>
+<td style="text-align:right;">
+0.0559580
+</td>
 <td style="text-align:left;">
-mkt_econ_eval_di_1
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-25
+R polr
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.0722499
+</td>
+<td style="text-align:right;">
+0.0917628
+</td>
+<td style="text-align:right;">
+0.4935636
+</td>
+<td style="text-align:right;">
+0.3069644
+</td>
+<td style="text-align:right;">
+0.0354592
+</td>
 <td style="text-align:left;">
-N
-</td>
-<td style="text-align:right;">
-47
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-54
-</td>
-<td style="text-align:right;">
-33
-</td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-43
+R polr
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.1088939
+</td>
+<td style="text-align:right;">
+0.1264952
+</td>
+<td style="text-align:right;">
+0.5154429
+</td>
+<td style="text-align:right;">
+0.2262760
+</td>
+<td style="text-align:right;">
+0.0228920
+</td>
 <td style="text-align:left;">
-8
+R polr
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2007
 </td>
 <td style="text-align:right;">
-3827
+4
 </td>
 <td style="text-align:right;">
-7325
+0.1311603
 </td>
 <td style="text-align:right;">
-5766
+0.1443632
 </td>
 <td style="text-align:right;">
-5226
+0.5127259
 </td>
 <td style="text-align:right;">
-2086
+0.1931386
 </td>
 <td style="text-align:right;">
-3596
+0.0186120
+</td>
+<td style="text-align:left;">
+R polr
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1993
 </td>
 <td style="text-align:right;">
-3876
+1
 </td>
 <td style="text-align:right;">
-3946
+0.0626676
+</td>
+<td style="text-align:right;">
+0.0909308
+</td>
+<td style="text-align:right;">
+0.4790867
+</td>
+<td style="text-align:right;">
+0.3246091
+</td>
+<td style="text-align:right;">
+0.0427057
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1993
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.1054630
+</td>
+<td style="text-align:right;">
+0.1243734
+</td>
+<td style="text-align:right;">
+0.5027682
+</td>
+<td style="text-align:right;">
+0.2447451
+</td>
+<td style="text-align:right;">
+0.0226503
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1993
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.1464445
+</td>
+<td style="text-align:right;">
+0.1480962
+</td>
+<td style="text-align:right;">
+0.4993305
+</td>
+<td style="text-align:right;">
+0.1922632
+</td>
+<td style="text-align:right;">
+0.0138655
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1993
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0.1366441
+</td>
+<td style="text-align:right;">
+0.1430050
+</td>
+<td style="text-align:right;">
+0.5015386
+</td>
+<td style="text-align:right;">
+0.2033232
+</td>
+<td style="text-align:right;">
+0.0154891
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.0265037
+</td>
+<td style="text-align:right;">
+0.0508320
+</td>
+<td style="text-align:right;">
+0.3974964
+</td>
+<td style="text-align:right;">
+0.4314184
+</td>
+<td style="text-align:right;">
+0.0937495
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.0479969
+</td>
+<td style="text-align:right;">
+0.0764672
+</td>
+<td style="text-align:right;">
+0.4575851
+</td>
+<td style="text-align:right;">
+0.3618393
+</td>
+<td style="text-align:right;">
+0.0561114
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.0808522
+</td>
+<td style="text-align:right;">
+0.1064922
+</td>
+<td style="text-align:right;">
+0.4943244
+</td>
+<td style="text-align:right;">
+0.2864267
+</td>
+<td style="text-align:right;">
+0.0319044
+</td>
+<td style="text-align:left;">
+Stata oprobit
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2007
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0.0974332
+</td>
+<td style="text-align:right;">
+0.1188876
+</td>
+<td style="text-align:right;">
+0.5011741
+</td>
+<td style="text-align:right;">
+0.2573054
+</td>
+<td style="text-align:right;">
+0.0251997
+</td>
+<td style="text-align:left;">
+Stata oprobit
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="table-3o.-original" class="section level2">
-<h2>Table 3O. Original</h2>
-<pre class="r"><code>colnames(Tbl3_orig) &lt;- c(&quot;Variable&quot;, &quot;Wave 1, Age 18-29&quot;, &quot;Wave 1, Age 30-44&quot;, &quot;Wave 1, Age 45-59&quot;, &quot;Wave 1, 60+&quot;, &quot;Wave 2, Age 18-29&quot;, &quot;Wave 2, Age 30-44&quot;, &quot;Wave 2, Age 45-59&quot;, &quot;Wave 2, 60+&quot;)
-
-Tbl3_orig$Variable &lt;- c(NA, &quot;stdliv_past5_fallen&quot;,&quot;stdliv_past5_risen&quot;, NA, &quot;stdliv_next5_fallen&quot;,&quot;stdliv_next5_risen&quot;,&quot;noway_future_improve&quot;,NA, &quot;mkt_econ_eval_pos&quot;,&quot;mkt_econ_eval_neg&quot;, &quot;N&quot;)
-
-Tbl3_orig &lt;- subset(Tbl3_orig, !is.na(Variable))
-
-kable_styling(kable(Tbl3_orig, caption = &quot;Table 3O. Original. Age-based inequality in economic experience in percentages&quot;))</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 3O. Original. Age-based inequality in economic experience in
-percentages
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-Variable
-</th>
-<th style="text-align:right;">
-Wave 1, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 1, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 1, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 1, 60+
-</th>
-<th style="text-align:right;">
-Wave 2, Age 18-29
-</th>
-<th style="text-align:right;">
-Wave 2, Age 30-44
-</th>
-<th style="text-align:right;">
-Wave 2, Age 45-59
-</th>
-<th style="text-align:right;">
-Wave 2, 60+
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-stdliv_past5_fallen
-</td>
-<td style="text-align:right;">
-57
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-75
-</td>
-<td style="text-align:right;">
-80
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-40
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_past5_risen
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-9
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-49
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_next5_fallen
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-34
-</td>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:right;">
-12
-</td>
-<td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
-25
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stdliv_next5_risen
-</td>
-<td style="text-align:right;">
-37
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-53
-</td>
-<td style="text-align:right;">
-43
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-noway_future_improve
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-15
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-74
-</td>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-79
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mkt_econ_eval_pos
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-20
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:right;">
-29
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mkt_econ_eval_neg
-</td>
-<td style="text-align:right;">
-45
-</td>
-<td style="text-align:right;">
-53
-</td>
-<td style="text-align:right;">
-56
-</td>
-<td style="text-align:right;">
-52
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-42
-</td>
-<td style="text-align:right;">
-43
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-N
-</td>
-<td style="text-align:right;">
-3800
-</td>
-<td style="text-align:right;">
-6897
-</td>
-<td style="text-align:right;">
-5542
-</td>
-<td style="text-align:right;">
-5019
-</td>
-<td style="text-align:right;">
-2107
-</td>
-<td style="text-align:right;">
-3667
-</td>
-<td style="text-align:right;">
-3945
-</td>
-<td style="text-align:right;">
-4045
-</td>
-</tr>
-</tbody>
-</table>
-<div id="table-a.1" class="section level3">
-<h3>Table A.1</h3>
-<p>Just to check the sample</p>
-<pre class="r"><code>TblA1_repa &lt;- df_orig_complete %&gt;%
-  subset(year == 1993) %&gt;%
-  group_by(cntry) %&gt;%
-  count(cntry) %&gt;%
-  ungroup()
-  
-TblA1_repb &lt;- df_orig_complete %&gt;%
-  subset(year == 1994) %&gt;%
-  group_by(cntry) %&gt;%
-  count(cntry) %&gt;%
-  ungroup()
-  
-TblA1_repc &lt;- df_orig_complete %&gt;%
-  subset(year == 1996) %&gt;%
-  group_by(cntry) %&gt;%
-  count(cntry) %&gt;%
-  ungroup()
-  
-TblA1_repd &lt;- df_orig_complete %&gt;%
-  subset(year == 2007) %&gt;%
-  group_by(cntry) %&gt;%
-  count(cntry) %&gt;%
-  ungroup()
-  
-TblA1_rep &lt;- left_join(TblA1_repd, TblA1_repa, by = &quot;cntry&quot;)
-TblA1_rep &lt;- left_join(TblA1_rep, TblA1_repb, by = &quot;cntry&quot;)
-TblA1_rep &lt;- left_join(TblA1_rep, TblA1_repc, by = &quot;cntry&quot;)
-
-TblA1_rep[,1:5] &lt;- TblA1_rep[,c(1,3,4,5,2)]
-
-colnames(TblA1_rep) &lt;- c(&quot;country&quot;, &quot;1993 N&quot;,&quot;1994 N&quot;,&quot;1996 N&quot;,&quot;2007 N&quot;)
-
-TblA1r &lt;- kable_styling(kable(TblA1_rep))
-
-save_kable(TblA1r, file = &quot;results/TblA1_rep.htm&quot;)
-
-webshot(&quot;results/TblA1_rep.htm&quot;, file = &quot;results/TblA1_rep.png&quot;)</code></pre>
-<p><img src="data:image/png;base64,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" width="672" /></p>
-<pre class="r"><code>kable_styling(kable(TblA1_rep, caption = &quot;Table 1.A Replicated&quot;))</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Table 1.A Replicated
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-country
-</th>
-<th style="text-align:right;">
-1993 N
-</th>
-<th style="text-align:right;">
-1994 N
-</th>
-<th style="text-align:right;">
-1996 N
-</th>
-<th style="text-align:right;">
-2007 N
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-belarus
-</td>
-<td style="text-align:right;">
-1026
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-918
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-bulgaria
-</td>
-<td style="text-align:right;">
-1671
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-878
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-czech
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1278
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-835
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-estonia
-</td>
-<td style="text-align:right;">
-1874
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-918
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hungary
-</td>
-<td style="text-align:right;">
-1226
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-853
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-latvia
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1843
-</td>
-<td style="text-align:right;">
-912
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lithuania
-</td>
-<td style="text-align:right;">
-1794
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-770
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-moldova
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1536
-</td>
-<td style="text-align:right;">
-944
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-poland
-</td>
-<td style="text-align:right;">
-1410
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1237
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-romania
-</td>
-<td style="text-align:right;">
-1481
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1119
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-russia
-</td>
-<td style="text-align:right;">
-1597
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1827
-</td>
-<td style="text-align:right;">
-1864
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-slovakia
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1307
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-915
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ukraine
-</td>
-<td style="text-align:right;">
-2274
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-NA
-</td>
-<td style="text-align:right;">
-1341
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div id="save-final-df" class="section level2">
-<h2>Save Final DF</h2>
-<pre class="r"><code># remove some unused variables to save filesize
-df_orig_complete &lt;- df_orig_complete %&gt;%
-  dplyr::select(stdliv_next5, stdliv_next5_di, stdliv_past5, stdliv_past5_di, cat_age, wave, female, education, EGP6, income, pensions, unemployed, car_owner, cntry, y1)
-
-write.csv(df_orig_complete, here::here(&quot;data/df_orig_complete.csv&quot;), row.names = F)</code></pre>
-<div id="colophon" class="section level3">
-<h3>Colophon</h3>
+<div id="colophon" class="section level2">
+<h2>Colophon</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 4.1.3 (2022-03-10)
 ## Platform: x86_64-w64-mingw32/x64 (64-bit)
@@ -3856,37 +2294,35 @@ write.csv(df_orig_complete, here::here(&quot;data/df_orig_complete.csv&quot;), r
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] knitr_1.38        webshot_0.5.2     sjPlot_2.8.10     MASS_7.3-55      
-##  [5] kableExtra_1.3.4  fastDummies_1.6.3 skimr_2.1.3       foreign_0.8-82   
-##  [9] readxl_1.4.0      forcats_0.5.1     stringr_1.4.0     dplyr_1.0.8      
-## [13] purrr_0.3.4       readr_2.1.2       tidyr_1.2.0       tibble_3.1.6     
-## [17] ggplot2_3.3.5     tidyverse_1.3.1  
+##  [1] knitr_1.38       webshot_0.5.2    sjPlot_2.8.10    MASS_7.3-55     
+##  [5] kableExtra_1.3.4 forcats_0.5.1    stringr_1.4.0    dplyr_1.0.8     
+##  [9] purrr_0.3.4      readr_2.1.2      tidyr_1.2.0      tibble_3.1.6    
+## [13] ggplot2_3.3.5    tidyverse_1.3.1 
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] nlme_3.1-155       fs_1.5.2           lubridate_1.8.0    insight_0.17.0    
-##  [5] httr_1.4.2         rprojroot_2.0.2    repr_1.1.4         tools_4.1.3       
+##  [1] nlme_3.1-155       fs_1.5.2           bit64_4.0.5        lubridate_1.8.0   
+##  [5] insight_0.17.0     httr_1.4.2         rprojroot_2.0.2    tools_4.1.3       
 ##  [9] backports_1.4.1    bslib_0.3.1        utf8_1.2.2         R6_2.5.1          
 ## [13] sjlabelled_1.1.8   DBI_1.1.2          colorspace_2.0-3   withr_2.5.0       
-## [17] processx_3.5.3     tidyselect_1.1.2   emmeans_1.7.3      compiler_4.1.3    
+## [17] tidyselect_1.1.2   emmeans_1.7.3      bit_4.0.4          compiler_4.1.3    
 ## [21] performance_0.9.0  cli_3.2.0          rvest_1.0.2        pacman_0.5.1      
-## [25] xml2_1.3.3         bayestestR_0.11.5  sass_0.4.1         scales_1.1.1      
-## [29] mvtnorm_1.1-3      callr_3.7.0        systemfonts_1.0.4  digest_0.6.29     
-## [33] minqa_1.2.4        rmarkdown_2.13     svglite_2.1.0      readstata13_0.10.0
-## [37] base64enc_0.1-3    pkgconfig_2.0.3    htmltools_0.5.2    lme4_1.1-28       
-## [41] highr_0.9          dbplyr_2.1.1       fastmap_1.1.0      rlang_1.0.2       
-## [45] rstudioapi_0.13    jquerylib_0.1.4    generics_0.1.2     jsonlite_1.8.0    
-## [49] car_3.0-12         magrittr_2.0.2     Matrix_1.4-0       parameters_0.17.0 
-## [53] Rcpp_1.0.8.3       munsell_0.5.0      fansi_1.0.3        abind_1.4-5       
-## [57] lifecycle_1.0.1    stringi_1.7.6      yaml_2.3.5         carData_3.0-5     
-## [61] grid_4.1.3         sjmisc_2.8.9       crayon_1.5.1       lattice_0.20-45   
+## [25] xml2_1.3.3         labeling_0.4.2     bayestestR_0.11.5  sass_0.4.1        
+## [29] scales_1.1.1       mvtnorm_1.1-3      systemfonts_1.0.4  digest_0.6.29     
+## [33] minqa_1.2.4        rmarkdown_2.13     svglite_2.1.0      pkgconfig_2.0.3   
+## [37] htmltools_0.5.2    lme4_1.1-28        highr_0.9          dbplyr_2.1.1      
+## [41] fastmap_1.1.0      rlang_1.0.2        readxl_1.4.0       rstudioapi_0.13   
+## [45] farver_2.1.0       jquerylib_0.1.4    generics_0.1.2     jsonlite_1.8.0    
+## [49] vroom_1.5.7        magrittr_2.0.2     parameters_0.17.0  Matrix_1.4-0      
+## [53] Rcpp_1.0.8.3       munsell_0.5.0      fansi_1.0.3        lifecycle_1.0.1   
+## [57] stringi_1.7.6      yaml_2.3.5         snakecase_0.11.0   grid_4.1.3        
+## [61] parallel_4.1.3     sjmisc_2.8.9       crayon_1.5.1       lattice_0.20-45   
 ## [65] ggeffects_1.1.1    haven_2.4.3        splines_4.1.3      sjstats_0.18.1    
-## [69] hms_1.1.1          ps_1.6.0           pillar_1.7.0       boot_1.3-28       
-## [73] estimability_1.3   effectsize_0.6.0.1 reprex_2.0.1       glue_1.6.2        
-## [77] evaluate_0.15      data.table_1.14.2  modelr_0.1.8       nloptr_2.0.0      
-## [81] vctrs_0.3.8        tzdb_0.3.0         cellranger_1.1.0   gtable_0.3.0      
-## [85] assertthat_0.2.1   datawizard_0.4.0   xfun_0.30          xtable_1.8-4      
-## [89] broom_0.7.12       viridisLite_0.4.0  ellipsis_0.3.2     here_1.0.1</code></pre>
-</div>
+## [69] hms_1.1.1          pillar_1.7.0       boot_1.3-28        estimability_1.3  
+## [73] effectsize_0.6.0.1 reprex_2.0.1       glue_1.6.2         evaluate_0.15     
+## [77] modelr_0.1.8       vctrs_0.3.8        nloptr_2.0.0       tzdb_0.3.0        
+## [81] cellranger_1.1.0   gtable_0.3.0       assertthat_0.2.1   datawizard_0.4.0  
+## [85] xfun_0.30          xtable_1.8-4       broom_0.7.12       viridisLite_0.4.0 
+## [89] ellipsis_0.3.2     here_1.0.1</code></pre>
 </div>
 
 
