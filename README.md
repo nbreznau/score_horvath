@@ -19,4 +19,4 @@ And an earlier wave spanning the mid 1990s from:
 *Loveless, Matthew (2009). EUREQUAL 1993-2007 Survey Codebook and Questionnaire, University of Oxford* and
 *Evans, G., S Whitefield, A Heath, C Payne (1993). Emerging Forms of Political Representation and Participation in Eastern Europe. (Data deposited at ESRC data archive, Essex.)*
 
-The data are located in the [data](../data) folder in the project repository and can be obtained from  [EUREQUAL (Data) - ORA - Oxford University Research Archive](https://ora.ox.ac.uk/objects/uuid:cda668b8-a583-43c7-9919-35c0a18db571). Please cite EUREQUAL and the above studies even if you take the data from this repository. 
+The data are located in the [data](../main/data) folder in the project repository and can be obtained from  [EUREQUAL (Data) - ORA - Oxford University Research Archive](https://ora.ox.ac.uk/objects/uuid:cda668b8-a583-43c7-9919-35c0a18db571). Please cite EUREQUAL and the above studies even if you take the data from this repository. 
